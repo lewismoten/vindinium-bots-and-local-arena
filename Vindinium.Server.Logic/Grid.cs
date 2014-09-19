@@ -138,7 +138,7 @@ namespace Vindinium.Game.Logic
             }
         }
 
-        internal int TokenCount(string token)
+        public int TokenCount(string token)
         {
             return Regex.Matches(MapText, Regex.Escape(token)).Count;
         }

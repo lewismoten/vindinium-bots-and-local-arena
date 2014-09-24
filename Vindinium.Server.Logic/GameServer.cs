@@ -143,7 +143,7 @@ namespace Vindinium.Game.Logic
 
         private void Start()
         {
-            Start(MapMaker.GenerateMap((int)(DateTime.Now.Ticks % int.MaxValue)));
+            Start(MapMaker.GenerateMap((int) (DateTime.Now.Ticks%int.MaxValue)));
         }
 
 

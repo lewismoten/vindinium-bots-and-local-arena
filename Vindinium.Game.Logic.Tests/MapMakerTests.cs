@@ -173,7 +173,7 @@ namespace Vindinium.Game.Logic.Tests
             var size = (int) Math.Sqrt(tokens.Length/2.0);
 
             // first line of tokens in bottom left quadrant
-            string borderTokens = tokens.Substring(tokens.Length/2, size/2);
+            string borderTokens = tokens.Substring(tokens.Length/2, size);
 
             Assert.That(borderTokens, Is.StringContaining("  "),
                 "Grid does not have open path on quadrant border\r\n{0}",

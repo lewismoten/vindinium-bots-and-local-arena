@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using System.Text.RegularExpressions;
+using Vindinium.Common;
 using Vindinium.Common.DataStructures;
 
 namespace Vindinium.Game.Logic
@@ -180,6 +181,11 @@ namespace Vindinium.Game.Logic
                    && position.Y <= Size
                    && position.X >= 1
                    && position.X <= Size;
+        }
+
+        public override string ToString()
+        {
+            return MapFormatter.FormatTokensAsMap(MapText);
         }
     }
 }

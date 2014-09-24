@@ -2,10 +2,10 @@ namespace Vindinium.Common
 {
     public enum Direction
     {
-        East,
-        North,
-        South,
-        Stay,
-        West
+        Stay = 0,
+        North = 1,
+        East = 2,
+        West = 3,
+        South = 4
     }
 }

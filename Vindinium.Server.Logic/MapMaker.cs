@@ -19,6 +19,7 @@ namespace Vindinium.Game.Logic
 
             MakePathBetweenQuadrants(grid, random);
             AddMines(grid, random);
+            AddTavern(grid, random);
 
             grid.ForEach(p => { if (grid[p] == EdgeToken) grid[p] = TokenHelper.Obstruction; });
 
@@ -39,6 +40,14 @@ namespace Vindinium.Game.Logic
                 Pos pos = edges[edgeIndex];
                 grid[pos] = TokenHelper.NeutralMine;
             }
+        }
+
+        private static void AddTavern(Grid grid, Random random)
+        {
+            List<Pos> edges = FindEdges(grid);
+            int edgeIndex = random.Next(0, edges.Count());
+            Pos pos = edges[edgeIndex];
+            grid[pos] = TokenHelper.Tavern;
         }
 
         private static List<Pos> FindEdges(Grid grid)

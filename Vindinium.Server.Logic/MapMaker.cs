@@ -20,6 +20,7 @@ namespace Vindinium.Game.Logic
             MakePathBetweenQuadrants(grid, random);
             AddMines(grid, random);
             AddTavern(grid, random);
+            AddPlayer(grid, random);
 
             grid.ForEach(p => { if (grid[p] == EdgeToken) grid[p] = TokenHelper.Obstruction; });
 
@@ -29,13 +30,13 @@ namespace Vindinium.Game.Logic
 
         private static void AddMines(Grid grid, Random random)
         {
-            List<Pos> edges = FindEdges(grid);
+            List<Pos> edges = FindTokenPositions(grid, EdgeToken);
 
             int count = random.Next(1, edges.Count());
 
             for (int i = 0; i < count; i++)
             {
-                edges = FindEdges(grid);
+                edges = FindTokenPositions(grid, EdgeToken);
                 int edgeIndex = random.Next(0, edges.Count());
                 Pos pos = edges[edgeIndex];
                 grid[pos] = TokenHelper.NeutralMine;
@@ -44,18 +45,26 @@ namespace Vindinium.Game.Logic
 
         private static void AddTavern(Grid grid, Random random)
         {
-            List<Pos> edges = FindEdges(grid);
+            List<Pos> edges = FindTokenPositions(grid, EdgeToken);
             int edgeIndex = random.Next(0, edges.Count());
             Pos pos = edges[edgeIndex];
             grid[pos] = TokenHelper.Tavern;
         }
 
-        private static List<Pos> FindEdges(Grid grid)
+        private static void AddPlayer(Grid grid, Random random)
+        {
+            List<Pos> edges = FindTokenPositions(grid, TokenHelper.OpenPath);
+            int edgeIndex = random.Next(0, edges.Count());
+            Pos pos = edges[edgeIndex];
+            grid[pos] = TokenHelper.Player(0);
+        }
+
+        private static List<Pos> FindTokenPositions(Grid grid, string token)
         {
             int quarter = grid.Size/2;
-            var edges = new List<Pos>();
-            grid.ForEach(p => { if (p.X <= quarter && p.Y <= quarter && grid[p] == EdgeToken) edges.Add(p); });
-            return edges;
+            var positions = new List<Pos>();
+            grid.ForEach(p => { if (p.X <= quarter && p.Y <= quarter && grid[p] == token) positions.Add(p); });
+            return positions;
         }
 
         private static void MakePathBetweenQuadrants(Grid grid, Random random)
@@ -66,7 +75,7 @@ namespace Vindinium.Game.Logic
             OpenPathAndMarkEdges(grid, tokenPositions);
             do
             {
-                List<Pos> edges = FindEdges(grid);
+                List<Pos> edges = FindTokenPositions(grid, EdgeToken);
                 int edgeIndex = random.Next(0, edges.Count());
                 pos = edges[edgeIndex];
                 tokenPositions = grid.GetAdjacentTokens(pos);

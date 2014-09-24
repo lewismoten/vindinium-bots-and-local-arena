@@ -151,6 +151,18 @@ namespace Vindinium.Game.Logic.Tests
         }
 
         [Test]
+        public void OpenPathBetweenLeftAndRightQuadrant()
+        {
+            var map = NewMap();
+            int half = map.Size/2;
+            for (int y = 1; y <= half; y++)
+            {
+                if (map[half, y] == "  ") Assert.Pass();
+            }
+            Assert.Fail("Missing path at top-left quardrent on right edge.\r\n{0}", map);
+        }
+
+        [Test]
         public void OpenPathBetweenTopAndBottomQuadrant()
         {
             string tokens = MapMaker.GenerateMap();

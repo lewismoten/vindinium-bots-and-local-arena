@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using Vindinium.Common.DataStructures;
 
 namespace Vindinium.Game.Logic.Tests
 {
@@ -31,6 +30,31 @@ namespace Vindinium.Game.Logic.Tests
                 }
             });
             return actualTokens;
+        }
+
+        private void AssertTokenIsAlwaysBesideAnother(string token, string neighborToken)
+        {
+            var map = new Grid {MapText = MapMaker.GenerateMap()};
+            map.ForEach(p =>
+            {
+                if (map[p] != token) return;
+                AdjacentTokens adjacentTokens = map.GetAdjacentTokens(p);
+                var tokens = new[]
+                {
+                    adjacentTokens.North.Token,
+                    adjacentTokens.South.Token,
+                    adjacentTokens.East.Token,
+                    adjacentTokens.West.Token
+                };
+
+                Assert.That(tokens, Has.Member(neighborToken),
+                    "Expected token '{0}' at {1} to be next to token '{2}'.\r\n{3}",
+                    token,
+                    p,
+                    neighborToken,
+                    map
+                    );
+            });
         }
 
         [Test]
@@ -123,93 +147,30 @@ namespace Vindinium.Game.Logic.Tests
         [Test]
         public void MinesAreNextToOpenPath()
         {
-            const string openPathToken = "  ";
-            const string mineToken = "$-";
-            var map = new Grid {MapText = MapMaker.GenerateMap()};
-            map.ForEach(p =>
-            {
-                if (map[p] != mineToken) return;
-                AdjacentTokens tokens = map.GetAdjacentTokens(p);
+            AssertTokenIsAlwaysBesideAnother("$-", "  ");
+        }
 
-                Assert.That(openPathToken,
-                    Is.EqualTo(tokens.North.Token)
-                        .Or.EqualTo(tokens.South.Token)
-                        .Or.EqualTo(tokens.East.Token)
-                        .Or.EqualTo(tokens.West.Token),
-                    "Mine not next to open path\r\n{0}\r\n{1}",
-                    p,
-                    new Board {MapText = map.MapText}
-                    );
-            });
         }
 
         [Test]
         public void OpenPathIsNextToAnotherOpenPath()
         {
-            const string openPathToken = "  ";
-            var map = new Grid {MapText = MapMaker.GenerateMap()};
-            map.ForEach(p =>
-            {
-                if (map[p] != openPathToken) return;
-                AdjacentTokens tokens = map.GetAdjacentTokens(p);
-
-                Assert.That(openPathToken,
-                    Is.EqualTo(tokens.North.Token)
-                        .Or.EqualTo(tokens.South.Token)
-                        .Or.EqualTo(tokens.East.Token)
-                        .Or.EqualTo(tokens.West.Token),
-                    "Open path is not next to another open path\r\n{0}\r\n{1}",
-                    p,
-                    new Board {MapText = map.MapText}
-                    );
-            });
+            AssertTokenIsAlwaysBesideAnother("  ", "  ");
         }
 
         [Test]
         public void PlayersAreNextToOpenPath()
         {
-            const string openPathToken = "  ";
-            const string playerTokenPrefix = "@";
-            var map = new Grid {MapText = MapMaker.GenerateMap()};
-            map.ForEach(p =>
-            {
-                if (!map[p].StartsWith(playerTokenPrefix)) return;
-                AdjacentTokens tokens = map.GetAdjacentTokens(p);
-
-                Assert.That(openPathToken,
-                    Is.EqualTo(tokens.North.Token)
-                        .Or.EqualTo(tokens.South.Token)
-                        .Or.EqualTo(tokens.East.Token)
-                        .Or.EqualTo(tokens.West.Token),
-                    "Player {2} is not next to open path\r\n{0}\r\n{1}",
-                    p,
-                    new Board {MapText = map.MapText},
-                    map[p]
-                    );
-            });
+            AssertTokenIsAlwaysBesideAnother("@1", "  ");
+            AssertTokenIsAlwaysBesideAnother("@2", "  ");
+            AssertTokenIsAlwaysBesideAnother("@3", "  ");
+            AssertTokenIsAlwaysBesideAnother("@4", "  ");
         }
 
         [Test]
         public void TavernsAreNextToOpenPath()
         {
-            const string openPathToken = "  ";
-            const string tavernToken = "[]";
-            var map = new Grid {MapText = MapMaker.GenerateMap()};
-            map.ForEach(p =>
-            {
-                if (map[p] != tavernToken) return;
-                AdjacentTokens tokens = map.GetAdjacentTokens(p);
-
-                Assert.That(openPathToken,
-                    Is.EqualTo(tokens.North.Token)
-                        .Or.EqualTo(tokens.South.Token)
-                        .Or.EqualTo(tokens.East.Token)
-                        .Or.EqualTo(tokens.West.Token),
-                    "Tavern not next to open path\r\n{0}\r\n{1}",
-                    p,
-                    new Board {MapText = map.MapText}
-                    );
-            });
+            AssertTokenIsAlwaysBesideAnother("[]", "  ");
         }
     }
 }

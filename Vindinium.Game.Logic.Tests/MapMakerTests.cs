@@ -133,5 +133,28 @@ namespace Vindinium.Game.Logic.Tests
             Assert.That(size, Is.AtMost(28));
             Assert.That(size%2, Is.Not.EqualTo(1));
         }
+
+        [Test]
+        public void TavernsAreNextToOpenPath()
+        {
+            const string openPathToken = "  ";
+            const string tavernToken = "[]";
+            var map = new Grid {MapText = MapMaker.GenerateMap()};
+            map.ForEach(p =>
+            {
+                if (map[p] != tavernToken) return;
+                AdjacentTokens tokens = map.GetAdjacentTokens(p);
+
+                Assert.That(openPathToken,
+                    Is.EqualTo(tokens.North.Token)
+                        .Or.EqualTo(tokens.South.Token)
+                        .Or.EqualTo(tokens.East.Token)
+                        .Or.EqualTo(tokens.West.Token),
+                    "Tavern not next to open path\r\n{0}\r\n{1}",
+                    p,
+                    new Board {MapText = map.MapText}
+                    );
+            });
+        }
     }
 }

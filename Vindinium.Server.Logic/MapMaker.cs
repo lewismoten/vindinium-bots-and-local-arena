@@ -18,11 +18,35 @@ namespace Vindinium.Game.Logic
             grid.MapText = string.Empty.PadLeft(size*size*2, '#');
 
             MakePathBetweenQuadrants(grid, random);
+            AddMines(grid, random);
 
             grid.ForEach(p => { if (grid[p] == EdgeToken) grid[p] = TokenHelper.Obstruction; });
 
             grid.MakeSymmetric();
             return grid.MapText;
+        }
+
+        private static void AddMines(Grid grid, Random random)
+        {
+            List<Pos> edges = FindEdges(grid);
+
+            int count = random.Next(1, edges.Count());
+
+            for (int i = 0; i < count; i++)
+            {
+                edges = FindEdges(grid);
+                int edgeIndex = random.Next(0, edges.Count());
+                Pos pos = edges[edgeIndex];
+                grid[pos] = TokenHelper.NeutralMine;
+            }
+        }
+
+        private static List<Pos> FindEdges(Grid grid)
+        {
+            int quarter = grid.Size/2;
+            var edges = new List<Pos>();
+            grid.ForEach(p => { if (p.X <= quarter && p.Y <= quarter && grid[p] == EdgeToken) edges.Add(p); });
+            return edges;
         }
 
         private static void MakePathBetweenQuadrants(Grid grid, Random random)
@@ -33,8 +57,7 @@ namespace Vindinium.Game.Logic
             OpenPathAndMarkEdges(grid, tokenPositions);
             do
             {
-                var edges = new List<Pos>();
-                grid.ForEach(p => { if (p.X <= quarter && p.Y <= quarter && grid[p] == EdgeToken) edges.Add(p); });
+                List<Pos> edges = FindEdges(grid);
                 int edgeIndex = random.Next(0, edges.Count());
                 pos = edges[edgeIndex];
                 tokenPositions = grid.GetAdjacentTokens(pos);

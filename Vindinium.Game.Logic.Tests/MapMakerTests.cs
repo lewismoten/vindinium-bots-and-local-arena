@@ -11,6 +11,7 @@ namespace Vindinium.Game.Logic.Tests
         private const int SeedCount = 25;
         private const int MaxSeed = int.MaxValue;
         private const int MinSeed = int.MinValue;
+        private readonly string[] _openTokens = {"  ", "@1", "@2", "@3", "@4"};
 
         private static Grid NewMap(int seed)
         {
@@ -36,26 +37,27 @@ namespace Vindinium.Game.Logic.Tests
             return actualTokens;
         }
 
-        private void AssertTokenIsAlwaysBesideAnother(string token, string neighborToken, int seed)
+        private void AssertTokenIsAlwaysBesideAnother(int seed, string token, string[] acceptableNeighbors)
         {
             var map = new Grid {MapText = MapMaker.GenerateMap(seed)};
             map.ForEach(p =>
             {
                 if (map[p] != token) return;
                 AdjacentTokens adjacentTokens = map.GetAdjacentTokens(p);
-                var tokens = new[]
+                var actualNeighbors = new[]
                 {
                     adjacentTokens.North.Token,
                     adjacentTokens.South.Token,
                     adjacentTokens.East.Token,
                     adjacentTokens.West.Token
                 };
+                bool found = actualNeighbors.Any(a => acceptableNeighbors.Any(aa => aa == a));
 
-                Assert.That(tokens, Has.Member(neighborToken),
-                    "Expected token '{0}' at {1} to be next to token '{2}'.\r\n{3}",
+                Assert.That(found, Is.True,
+                    "Expected token '{0}' at {1} to be next to tokens '{2}'.\r\n{3}",
                     token,
                     p,
-                    neighborToken,
+                    string.Join("', '", acceptableNeighbors),
                     map
                     );
             });
@@ -151,7 +153,7 @@ namespace Vindinium.Game.Logic.Tests
         [Test]
         public void MinesAreNextToOpenPath([Random(MinSeed, MaxSeed, SeedCount)] int seed)
         {
-            AssertTokenIsAlwaysBesideAnother("$-", "  ", seed);
+            AssertTokenIsAlwaysBesideAnother(seed, "$-", _openTokens);
         }
 
         [Test]
@@ -161,7 +163,7 @@ namespace Vindinium.Game.Logic.Tests
             int half = map.Size/2;
             for (int y = 1; y <= half; y++)
             {
-                if (map[half, y] == "  ") Assert.Pass();
+                if (_openTokens.Any(t => t == map[half, y])) Assert.Pass();
             }
             Assert.Fail("Missing path at top-left quardrent on right edge.\r\n{0}", map);
         }
@@ -175,7 +177,7 @@ namespace Vindinium.Game.Logic.Tests
             // first line of tokens in bottom left quadrant
             string borderTokens = tokens.Substring(tokens.Length/2, size);
 
-            Assert.That(borderTokens, Is.StringContaining("  "),
+            Assert.That(_openTokens.Any(t => borderTokens.IndexOf(t, StringComparison.Ordinal) != -1), Is.True,
                 "Grid does not have open path on quadrant border\r\n{0}",
                 new Grid {MapText = tokens});
         }
@@ -183,22 +185,22 @@ namespace Vindinium.Game.Logic.Tests
         [Test]
         public void OpenPathIsNextToAnotherOpenPath([Random(MinSeed, MaxSeed, SeedCount)] int seed)
         {
-            AssertTokenIsAlwaysBesideAnother("  ", "  ", seed);
+            AssertTokenIsAlwaysBesideAnother(seed, "  ", _openTokens);
         }
 
         [Test]
         public void PlayersAreNextToOpenPath([Random(MinSeed, MaxSeed, SeedCount)] int seed)
         {
-            AssertTokenIsAlwaysBesideAnother("@1", "  ", seed);
-            AssertTokenIsAlwaysBesideAnother("@2", "  ", seed);
-            AssertTokenIsAlwaysBesideAnother("@3", "  ", seed);
-            AssertTokenIsAlwaysBesideAnother("@4", "  ", seed);
+            AssertTokenIsAlwaysBesideAnother(seed, "@1", _openTokens);
+            AssertTokenIsAlwaysBesideAnother(seed, "@2", _openTokens);
+            AssertTokenIsAlwaysBesideAnother(seed, "@3", _openTokens);
+            AssertTokenIsAlwaysBesideAnother(seed, "@4", _openTokens);
         }
 
         [Test]
         public void TavernsAreNextToOpenPath([Random(MinSeed, MaxSeed, SeedCount)] int seed)
         {
-            AssertTokenIsAlwaysBesideAnother("[]", "  ", seed);
+            AssertTokenIsAlwaysBesideAnother(seed, "[]", _openTokens);
         }
     }
 }

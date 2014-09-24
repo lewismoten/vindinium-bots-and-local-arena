@@ -34,20 +34,6 @@ namespace Vindinium.Game.Logic.Tests
         }
 
         [Test]
-        public void AllPathsAreReachable()
-        {
-            Grid map = NewMap();
-            Pos start = map.PositionOf("  ");
-            map.ForEach(
-                p =>
-                {
-                    if (map[p] == "  ")
-                        Assert.That(map.PathExistsBetween(start, p), Is.True,
-                            "No path exists between {0} and {1}\r\n{2}", start, p, new Board {MapText = map.MapText});
-                });
-        }
-
-        [Test]
         public void MapDoesNotHaveUnexpectedTokens()
         {
             string[] actualTokens = TokensOnNewMap().Select(p => p.Key).ToArray();

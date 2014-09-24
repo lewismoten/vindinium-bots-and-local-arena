@@ -150,6 +150,18 @@ namespace Vindinium.Game.Logic.Tests
             AssertTokenIsAlwaysBesideAnother("$-", "  ");
         }
 
+        [Test]
+        public void OpenPathBetweenTopAndBottomQuadrant()
+        {
+            string tokens = MapMaker.GenerateMap();
+            var size = (int) Math.Sqrt(tokens.Length/2.0);
+
+            // first line of tokens in bottom left quadrant
+            string borderTokens = tokens.Substring(tokens.Length/2, size/2);
+
+            Assert.That(borderTokens, Is.StringContaining("  "),
+                "Grid does not have open path on quadrant border\r\n{0}",
+                new Grid {MapText = tokens});
         }
 
         [Test]

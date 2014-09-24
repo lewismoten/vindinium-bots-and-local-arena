@@ -30,8 +30,7 @@ namespace Vindinium.Game.Logic
 
         private static void AddToken(Grid grid, string token, Random random)
         {
-            int max = grid.Size/2;
-
+            int max = grid.Size/2 + 1;
             var pos = new Pos {X = random.Next(1, max), Y = random.Next(1, max)};
             while (grid[pos] != TokenHelper.OpenPath)
             {

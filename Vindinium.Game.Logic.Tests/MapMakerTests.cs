@@ -8,14 +8,18 @@ namespace Vindinium.Game.Logic.Tests
     [TestFixture]
     public class MapMakerTests
     {
-        private static Grid NewMap()
+        private const int SeedCount = 25;
+        private const int MaxSeed = int.MaxValue;
+        private const int MinSeed = int.MinValue;
+
+        private static Grid NewMap(int seed)
         {
-            return new Grid {MapText = MapMaker.GenerateMap()};
+            return new Grid {MapText = MapMaker.GenerateMap(seed)};
         }
 
-        private static Dictionary<string, int> TokensOnNewMap()
+        private static Dictionary<string, int> TokensOnNewMap(int seed)
         {
-            Grid map = NewMap();
+            Grid map = NewMap(seed);
             var actualTokens = new Dictionary<string, int>();
             map.ForEach(p =>
             {
@@ -32,9 +36,9 @@ namespace Vindinium.Game.Logic.Tests
             return actualTokens;
         }
 
-        private void AssertTokenIsAlwaysBesideAnother(string token, string neighborToken)
+        private void AssertTokenIsAlwaysBesideAnother(string token, string neighborToken, int seed)
         {
-            var map = new Grid {MapText = MapMaker.GenerateMap()};
+            var map = new Grid {MapText = MapMaker.GenerateMap(seed)};
             map.ForEach(p =>
             {
                 if (map[p] != token) return;
@@ -58,17 +62,17 @@ namespace Vindinium.Game.Logic.Tests
         }
 
         [Test]
-        public void MapDoesNotHaveUnexpectedTokens()
+        public void MapDoesNotHaveUnexpectedTokens([Random(MinSeed, MaxSeed, SeedCount)] int seed)
         {
-            string[] actualTokens = TokensOnNewMap().Select(p => p.Key).ToArray();
+            string[] actualTokens = TokensOnNewMap(seed).Select(p => p.Key).ToArray();
             var expectedTokens = new[] {"@1", "@2", "@3", "@4", "$1", "$2", "$3", "$4", "[]", "$-", "##", "  "};
             Assert.That(actualTokens, Is.SubsetOf(expectedTokens));
         }
 
         [Test]
-        public void MapHasEmptyMines()
+        public void MapHasEmptyMines([Random(MinSeed, MaxSeed, SeedCount)] int seed)
         {
-            string[] actualTokens = TokensOnNewMap().Select(p => p.Key).ToArray();
+            string[] actualTokens = TokensOnNewMap(seed).Select(p => p.Key).ToArray();
             Assert.That(actualTokens, Has.Member("$-"));
             Assert.That(actualTokens, Has.No.Member("$1"));
             Assert.That(actualTokens, Has.No.Member("$2"));
@@ -77,30 +81,30 @@ namespace Vindinium.Game.Logic.Tests
         }
 
         [Test]
-        public void MapHasEmptyPath()
+        public void MapHasEmptyPath([Random(MinSeed, MaxSeed, SeedCount)] int seed)
         {
-            Dictionary<string, int> actualTokens = TokensOnNewMap();
+            Dictionary<string, int> actualTokens = TokensOnNewMap(seed);
             Assert.That(actualTokens["  "], Is.AtLeast(1));
         }
 
         [Test]
-        public void MapHasFourTaverns()
+        public void MapHasFourTaverns([Random(MinSeed, MaxSeed, SeedCount)] int seed)
         {
-            Dictionary<string, int> actualTokens = TokensOnNewMap();
+            Dictionary<string, int> actualTokens = TokensOnNewMap(seed);
             Assert.That(actualTokens["[]"], Is.EqualTo(4));
         }
 
         [Test]
-        public void MapHasImpassibleWoods()
+        public void MapHasImpassibleWoods([Random(MinSeed, MaxSeed, SeedCount)] int seed)
         {
-            Dictionary<string, int> actualTokens = TokensOnNewMap();
+            Dictionary<string, int> actualTokens = TokensOnNewMap(seed);
             Assert.That(actualTokens["##"], Is.GreaterThan(0));
         }
 
         [Test]
-        public void MapHasPlayers()
+        public void MapHasPlayers([Random(MinSeed, MaxSeed, SeedCount)] int seed)
         {
-            Dictionary<string, int> actualTokens = TokensOnNewMap();
+            Dictionary<string, int> actualTokens = TokensOnNewMap(seed);
             Assert.That(actualTokens["@1"], Is.EqualTo(1));
             Assert.That(actualTokens["@2"], Is.EqualTo(1));
             Assert.That(actualTokens["@3"], Is.EqualTo(1));
@@ -108,9 +112,9 @@ namespace Vindinium.Game.Logic.Tests
         }
 
         [Test]
-        public void MapIsSymmetric()
+        public void MapIsSymmetric([Random(MinSeed, MaxSeed, SeedCount)] int seed)
         {
-            string map = MapMaker.GenerateMap();
+            string map = MapMaker.GenerateMap(seed);
 
             map = map.Replace("$-", "$$")
                 .Replace("[]", "[[")
@@ -133,9 +137,9 @@ namespace Vindinium.Game.Logic.Tests
         }
 
         [Test]
-        public void MapTextIsExpectedLength()
+        public void MapTextIsExpectedLength([Random(MinSeed, MaxSeed, SeedCount)] int seed)
         {
-            string text = MapMaker.GenerateMap();
+            string text = MapMaker.GenerateMap(seed);
             int cells = text.Length/2;
             double size = Math.Sqrt(cells);
             Assert.That(size, Is.EqualTo(Math.Floor(size)));
@@ -145,15 +149,15 @@ namespace Vindinium.Game.Logic.Tests
         }
 
         [Test]
-        public void MinesAreNextToOpenPath()
+        public void MinesAreNextToOpenPath([Random(MinSeed, MaxSeed, SeedCount)] int seed)
         {
-            AssertTokenIsAlwaysBesideAnother("$-", "  ");
+            AssertTokenIsAlwaysBesideAnother("$-", "  ", seed);
         }
 
         [Test]
-        public void OpenPathBetweenLeftAndRightQuadrant()
+        public void OpenPathBetweenLeftAndRightQuadrant([Random(MinSeed, MaxSeed, SeedCount)] int seed)
         {
-            var map = NewMap();
+            Grid map = NewMap(seed);
             int half = map.Size/2;
             for (int y = 1; y <= half; y++)
             {
@@ -163,9 +167,9 @@ namespace Vindinium.Game.Logic.Tests
         }
 
         [Test]
-        public void OpenPathBetweenTopAndBottomQuadrant()
+        public void OpenPathBetweenTopAndBottomQuadrant([Random(MinSeed, MaxSeed, SeedCount)] int seed)
         {
-            string tokens = MapMaker.GenerateMap();
+            string tokens = MapMaker.GenerateMap(seed);
             var size = (int) Math.Sqrt(tokens.Length/2.0);
 
             // first line of tokens in bottom left quadrant
@@ -177,24 +181,24 @@ namespace Vindinium.Game.Logic.Tests
         }
 
         [Test]
-        public void OpenPathIsNextToAnotherOpenPath()
+        public void OpenPathIsNextToAnotherOpenPath([Random(MinSeed, MaxSeed, SeedCount)] int seed)
         {
-            AssertTokenIsAlwaysBesideAnother("  ", "  ");
+            AssertTokenIsAlwaysBesideAnother("  ", "  ", seed);
         }
 
         [Test]
-        public void PlayersAreNextToOpenPath()
+        public void PlayersAreNextToOpenPath([Random(MinSeed, MaxSeed, SeedCount)] int seed)
         {
-            AssertTokenIsAlwaysBesideAnother("@1", "  ");
-            AssertTokenIsAlwaysBesideAnother("@2", "  ");
-            AssertTokenIsAlwaysBesideAnother("@3", "  ");
-            AssertTokenIsAlwaysBesideAnother("@4", "  ");
+            AssertTokenIsAlwaysBesideAnother("@1", "  ", seed);
+            AssertTokenIsAlwaysBesideAnother("@2", "  ", seed);
+            AssertTokenIsAlwaysBesideAnother("@3", "  ", seed);
+            AssertTokenIsAlwaysBesideAnother("@4", "  ", seed);
         }
 
         [Test]
-        public void TavernsAreNextToOpenPath()
+        public void TavernsAreNextToOpenPath([Random(MinSeed, MaxSeed, SeedCount)] int seed)
         {
-            AssertTokenIsAlwaysBesideAnother("[]", "  ");
+            AssertTokenIsAlwaysBesideAnother("[]", "  ", seed);
         }
     }
 }

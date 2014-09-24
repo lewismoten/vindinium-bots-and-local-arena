@@ -5,10 +5,9 @@ namespace Vindinium.Game.Logic
 {
     public static class MapMaker
     {
-        public static string GenerateMap()
+        public static string GenerateMap(int seed)
         {
             var grid = new Grid();
-            int seed = (int) DateTime.Now.Ticks%int.MaxValue;
             var random = new Random(seed);
             int quarter = random.Next(5, 14);
             int size = quarter*2;

@@ -158,6 +158,28 @@ namespace Vindinium.Game.Logic.Tests
         }
 
         [Test]
+        public void OpenPathIsNextToAnotherOpenPath()
+        {
+            const string openPathToken = "  ";
+            var map = new Grid {MapText = MapMaker.GenerateMap()};
+            map.ForEach(p =>
+            {
+                if (map[p] != openPathToken) return;
+                AdjacentTokens tokens = map.GetAdjacentTokens(p);
+
+                Assert.That(openPathToken,
+                    Is.EqualTo(tokens.North.Token)
+                        .Or.EqualTo(tokens.South.Token)
+                        .Or.EqualTo(tokens.East.Token)
+                        .Or.EqualTo(tokens.West.Token),
+                    "Open path is not next to another open path\r\n{0}\r\n{1}",
+                    p,
+                    new Board {MapText = map.MapText}
+                    );
+            });
+        }
+
+        [Test]
         public void PlayersAreNextToOpenPath()
         {
             const string openPathToken = "  ";

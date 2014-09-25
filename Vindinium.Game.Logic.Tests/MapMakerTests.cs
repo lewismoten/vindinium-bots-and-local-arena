@@ -12,10 +12,11 @@ namespace Vindinium.Game.Logic.Tests
         private const int MaxSeed = int.MaxValue;
         private const int MinSeed = int.MinValue;
         private readonly string[] _openTokens = {"  ", "@1", "@2", "@3", "@4"};
+        private static readonly IMapMaker MapMaker = new MapMaker();
 
         private static Grid NewMap(int seed)
         {
-            return new Grid {MapText = new MapMaker().GenerateMap(seed)};
+            return new Grid {MapText = MapMaker.GenerateMap(seed)};
         }
 
         private static Dictionary<string, int> TokensOnNewMap(int seed)
@@ -39,7 +40,7 @@ namespace Vindinium.Game.Logic.Tests
 
         private void AssertTokenIsAlwaysBesideAnother(int seed, string token, string[] acceptableNeighbors)
         {
-            var map = new Grid {MapText = new MapMaker().GenerateMap(seed)};
+            var map = new Grid {MapText = MapMaker.GenerateMap(seed)};
             map.ForEach(p =>
             {
                 if (map[p] != token) return;
@@ -116,7 +117,7 @@ namespace Vindinium.Game.Logic.Tests
         [Test]
         public void MapIsSymmetric([Random(MinSeed, MaxSeed, SeedCount)] int seed)
         {
-            string map = new MapMaker().GenerateMap(seed);
+            string map = MapMaker.GenerateMap(seed);
 
             map = map.Replace("$-", "$$")
                 .Replace("[]", "[[")
@@ -141,7 +142,7 @@ namespace Vindinium.Game.Logic.Tests
         [Test]
         public void MapTextIsExpectedLength([Random(MinSeed, MaxSeed, SeedCount)] int seed)
         {
-            string text = new MapMaker().GenerateMap(seed);
+            string text = MapMaker.GenerateMap(seed);
             int cells = text.Length/2;
             double size = Math.Sqrt(cells);
             Assert.That(size, Is.EqualTo(Math.Floor(size)));
@@ -171,7 +172,7 @@ namespace Vindinium.Game.Logic.Tests
         [Test]
         public void OpenPathBetweenTopAndBottomQuadrant([Random(MinSeed, MaxSeed, SeedCount)] int seed)
         {
-            string tokens = new MapMaker().GenerateMap(seed);
+            string tokens = MapMaker.GenerateMap(seed);
             var size = (int) Math.Sqrt(tokens.Length/2.0);
 
             // first line of tokens in bottom left quadrant

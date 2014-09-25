@@ -5,7 +5,7 @@ using Vindinium.Common.DataStructures;
 
 namespace Vindinium.Game.Logic
 {
-    public class MapMaker
+    public class MapMaker : IMapMaker
     {
         private const string EdgeToken = "??";
 

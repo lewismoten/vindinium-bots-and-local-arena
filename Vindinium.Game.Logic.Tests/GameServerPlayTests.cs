@@ -4,6 +4,7 @@ using Vindinium.Common;
 using Vindinium.Common.DataStructures;
 using Vindinium.Common.Entities;
 using Vindinium.Common.Services;
+using Vindinium.Game.Logic.Tests.Mocks;
 
 namespace Vindinium.Game.Logic.Tests
 {
@@ -13,7 +14,7 @@ namespace Vindinium.Game.Logic.Tests
         [SetUp]
         public void BeforeEachTest()
         {
-            _server = new GameServer(new MapMaker(), _apiResponse);
+            _server = new GameServer(new MockMapMaker(), _apiResponse);
         }
 
         private IGameServerProxy _server;

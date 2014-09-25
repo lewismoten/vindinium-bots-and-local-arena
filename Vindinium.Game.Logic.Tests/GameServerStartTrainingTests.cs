@@ -4,6 +4,7 @@ using NUnit.Framework;
 using Vindinium.Common;
 using Vindinium.Common.DataStructures;
 using Vindinium.Common.Services;
+using Vindinium.Game.Logic.Tests.Mocks;
 
 namespace Vindinium.Game.Logic.Tests
 {
@@ -13,7 +14,7 @@ namespace Vindinium.Game.Logic.Tests
         [TestFixtureSetUp]
         public void RunBeforeFirstTest()
         {
-            IGameServerProxy server = new GameServer(new MapMaker(), new MockApiResponse());
+            IGameServerProxy server = new GameServer(new MockMapMaker(), new MockApiResponse());
             _gameResponse = server.StartTraining(300).JsonToObject<GameResponse>();
             _game = _gameResponse.Game;
 

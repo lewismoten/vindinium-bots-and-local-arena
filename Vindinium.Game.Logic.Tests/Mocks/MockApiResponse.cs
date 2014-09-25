@@ -1,6 +1,6 @@
 ﻿using Vindinium.Common.Entities;
 
-namespace Vindinium.Game.Logic.Tests
+namespace Vindinium.Game.Logic.Tests.Mocks
 {
     public class MockApiResponse : IApiResponse
     {

@@ -4,6 +4,7 @@ using NUnit.Framework;
 using Vindinium.Common;
 using Vindinium.Common.DataStructures;
 using Vindinium.Common.Services;
+using Vindinium.Game.Logic.Tests.Mocks;
 
 namespace Vindinium.Game.Logic.Tests
 {
@@ -13,11 +14,9 @@ namespace Vindinium.Game.Logic.Tests
         [TestFixtureSetUp]
         public void RunBeforeFirstTest()
         {
-            _server = new GameServer(new MapMaker(), new MockApiResponse());
+            _server = new GameServer(new MockMapMaker(), new MockApiResponse());
             _gameResponse = _server.StartTraining(300).JsonToObject<GameResponse>();
             _game = _gameResponse.Game;
-
-            Console.WriteLine(_game.Board);
         }
 
         private GameResponse _gameResponse;
@@ -134,10 +133,10 @@ namespace Vindinium.Game.Logic.Tests
         }
 
         [Test]
-        public void GameBoardHasSize()
+        public void GameBoardSizeCorrespondsToMapTextLength()
         {
-            Assert.That(_gameResponse.Game.Board.Size, Is.InRange(10, 28));
-            Assert.That(_gameResponse.Game.Board.Size%2, Is.EqualTo(0), "Not even");
+            var board = _gameResponse.Game.Board;
+            Assert.That(board.Size, Is.EqualTo(Math.Sqrt(board.MapText.Length/2.0)));
         }
 
         [Test]

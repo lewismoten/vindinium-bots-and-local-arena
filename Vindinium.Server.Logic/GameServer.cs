@@ -14,10 +14,10 @@ namespace Vindinium.Game.Logic
         private const int HealingCost = 2;
         private const int AttackDamage = 20;
         private readonly IApiResponse _apiResponse;
-        private readonly MapMaker _mapMaker;
+        private readonly IMapMaker _mapMaker;
         private GameResponse _response = new GameResponse();
 
-        public GameServer(MapMaker mapMaker, IApiResponse apiResponse)
+        public GameServer(IMapMaker mapMaker, IApiResponse apiResponse)
         {
             _mapMaker = mapMaker;
             _apiResponse = apiResponse;
@@ -103,12 +103,9 @@ namespace Vindinium.Game.Logic
                 Token = token,
                 ViewUrl = string.Format("http://vindinium.org/{0}", gameId)
             };
-            for (int i = 0; i < 10; i++)
+            for (int i = 1; i <= 4; i++)
             {
-                if (grid.PositionOf(TokenHelper.Player(i)) != null)
-                {
-                    _response.Game.Players.Add(CreateHero(grid, i));
-                }
+                _response.Game.Players.Add(CreateHero(grid, i));
             }
             return _response.ToJson();
         }

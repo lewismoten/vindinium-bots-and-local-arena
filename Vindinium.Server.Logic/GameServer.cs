@@ -13,23 +13,19 @@ namespace Vindinium.Game.Logic
         private const int FullLife = 100;
         private const int HealingCost = 2;
         private const int AttackDamage = 20;
+        private readonly IApiResponse _apiResponse;
         private readonly MapMaker _mapMaker;
-        private readonly IApiResponse _apiResponse = new ApiResponse();
         private GameResponse _response = new GameResponse();
 
-        public GameServer(MapMaker mapMaker)
+        public GameServer(MapMaker mapMaker, IApiResponse apiResponse)
         {
             _mapMaker = mapMaker;
+            _apiResponse = apiResponse;
         }
 
         public GameResponse GameResponse
         {
             get { return null; }
-        }
-
-        public IApiResponse ApiResponse
-        {
-            get { return _apiResponse; }
         }
 
         public string Play(string gameId, string token, Direction direction)

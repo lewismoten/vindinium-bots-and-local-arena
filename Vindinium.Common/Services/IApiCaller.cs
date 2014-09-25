@@ -4,6 +4,6 @@ namespace Vindinium.Common.Services
 {
     public interface IApiCaller
     {
-        IApiResponse Call(IApiRequest apiRequest);
+        void Call(IApiRequest apiRequest, IApiResponse apiResponse);
     }
 }

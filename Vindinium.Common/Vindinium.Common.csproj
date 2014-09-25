@@ -46,7 +46,6 @@
     <Compile Include="DataStructures\Hero.cs" />
     <Compile Include="DataStructures\Pos.cs" />
     <Compile Include="Direction.cs" />
-    <Compile Include="Entities\ApiResponse.cs" />
     <Compile Include="Entities\IApiRequest.cs" />
     <Compile Include="EnvironmentType.cs" />
     <Compile Include="JsonHelper.cs" />

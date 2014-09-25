@@ -13,8 +13,8 @@ namespace Vindinium.Game.Logic.Tests
         [TestFixtureSetUp]
         public void RunBeforeFirstTest()
         {
-            IGameServerProxy server = new GameServer(new MapMaker());
-            _gameResponse = server.StartTraining(300).JsonToObject<GameResponse>();
+            _server = new GameServer(new MapMaker(), new MockApiResponse());
+            _gameResponse = _server.StartTraining(300).JsonToObject<GameResponse>();
             _game = _gameResponse.Game;
 
             Console.WriteLine(_game.Board);
@@ -22,7 +22,7 @@ namespace Vindinium.Game.Logic.Tests
 
         private GameResponse _gameResponse;
         private Common.DataStructures.Game _game;
-
+        private IGameServerProxy _server;
 
         [Test]
         public void AllOtherPlayersWithoutUserId()
@@ -107,18 +107,16 @@ namespace Vindinium.Game.Logic.Tests
         [Test]
         public void EachGameHasADifferentGameId()
         {
-            var server = new GameServer(new MapMaker());
-            var game1 = server.StartTraining(3000).JsonToObject<GameResponse>();
-            var game2 = server.StartTraining(3000).JsonToObject<GameResponse>();
+            var game1 = _server.StartTraining(3000).JsonToObject<GameResponse>();
+            var game2 = _server.StartTraining(3000).JsonToObject<GameResponse>();
             Assert.That(game1.Game.Id, Is.Not.EqualTo(game2.Game.Id));
         }
 
         [Test]
         public void EachGameHasADifferentToken()
         {
-            var server = new GameServer(new MapMaker());
-            var game1 = server.StartTraining(3000).JsonToObject<GameResponse>();
-            var game2 = server.StartTraining(3000).JsonToObject<GameResponse>();
+            var game1 = _server.StartTraining(3000).JsonToObject<GameResponse>();
+            var game2 = _server.StartTraining(3000).JsonToObject<GameResponse>();
             Assert.That(game1.Token, Is.Not.EqualTo(game2.Token));
         }
 

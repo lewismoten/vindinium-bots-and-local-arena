@@ -12,7 +12,7 @@ namespace Vindinium.Game.Logic.Tests
         [TestFixtureSetUp]
         public void RunBeforeFirstTest()
         {
-            IGameServerProxy server = new GameServer(new MapMaker());
+            IGameServerProxy server = new GameServer(new MapMaker(), new MockApiResponse());
             _gameResponse = server.StartArena().JsonToObject<GameResponse>();
             _game = _gameResponse.Game;
 

@@ -8,31 +8,37 @@ namespace Vindinium.Client.Logic
 {
     public class GameServerProxy : IGameServerProxy
     {
+        private readonly IApiResponse _apiResponse;
         private readonly IApiCaller _caller;
         private readonly IApiEndpointBuilder _endpointBuilder;
 
-        public GameServerProxy(IApiCaller caller, IApiEndpointBuilder endpointBuilder)
+        public GameServerProxy(IApiCaller caller, IApiEndpointBuilder endpointBuilder, IApiResponse apiResponse)
         {
             _caller = caller;
             _endpointBuilder = endpointBuilder;
+            _apiResponse = apiResponse;
+        }
+
+        public IApiResponse ApiResponse
+        {
+            get { return _apiResponse; }
         }
 
         public GameResponse GameResponse { get; private set; }
-        public IApiResponse ApiResponse { get; private set; }
 
         public string StartTraining(uint turns)
         {
-            return CallApi(_endpointBuilder.StartTraining(turns));
+            return CallApi(_endpointBuilder.StartTraining(turns), _apiResponse);
         }
 
         public string StartArena()
         {
-            return CallApi(_endpointBuilder.StartArena());
+            return CallApi(_endpointBuilder.StartArena(), _apiResponse);
         }
 
         public string Play(string gameId, string token, Direction direction)
         {
-            return CallApi(_endpointBuilder.Play(gameId, token, direction));
+            return CallApi(_endpointBuilder.Play(gameId, token, direction), _apiResponse);
         }
 
 
@@ -46,16 +52,16 @@ namespace Vindinium.Client.Logic
             throw new NotImplementedException();
         }
 
-        private string CallApi(IApiRequest request)
+        private string CallApi(IApiRequest request, IApiResponse response)
         {
-            ApiResponse = _caller.Call(request);
-            if (ApiResponse.HasError)
+            _caller.Call(request, response);
+            if (response.HasError)
             {
                 GameResponse = null;
-                return ApiResponse.ErrorMessage;
+                return response.ErrorMessage;
             }
-            GameResponse = ApiResponse.Text.JsonToObject<GameResponse>();
-            return ApiResponse.Text;
+            GameResponse = response.Text.JsonToObject<GameResponse>();
+            return response.Text;
         }
     }
 }

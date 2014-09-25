@@ -13,7 +13,7 @@ namespace Vindinium.Client.Logic
 
         #region IApiCaller Members
 
-        public IApiResponse Call(IApiRequest apiRequest)
+        public void Call(IApiRequest apiRequest, IApiResponse apiResponse)
         {
             Logger.Trace("Call");
             try
@@ -24,22 +24,23 @@ namespace Vindinium.Client.Logic
                 using (WebResponse response = request.GetResponse())
                 {
                     LogResponseTime(started);
-                    return ResponseAsApiResponse(response);
+                    ResponseAsApiResponse(response, apiResponse);
                 }
             }
             catch (WebException exception)
             {
-                return ExceptionAsApiResponse(exception);
+                ExceptionAsApiResponse(exception, apiResponse);
             }
         }
 
         #endregion
 
-        private static IApiResponse ResponseAsApiResponse(WebResponse response)
+        private void ResponseAsApiResponse(WebResponse webResponse, IApiResponse apiResponse)
         {
             Logger.Trace("ResponseAsApiResponse");
-            string text = ReadResponseStream(response);
-            return new ApiResponse {Text = text};
+            apiResponse.HasError = false;
+            apiResponse.ErrorMessage = null;
+            apiResponse.Text = ReadResponseStream(webResponse);
         }
 
         private static string ReadResponseStream(WebResponse response)
@@ -113,12 +114,12 @@ namespace Vindinium.Client.Logic
             return request;
         }
 
-        private IApiResponse ExceptionAsApiResponse(WebException exception)
+        private void ExceptionAsApiResponse(WebException exception, IApiResponse apiResponse)
         {
             Logger.Trace("ExceptionAsApiResponse - Status: {0}", exception.Status);
-            string message = ReadResponseStream(exception.Response);
-            var response = new ApiResponse {HasError = true, ErrorMessage = message};
-            return response;
+            apiResponse.HasError = true;
+            apiResponse.Text = null;
+            apiResponse.ErrorMessage = ReadResponseStream(exception.Response);
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Linq;
 using Vindinium.Client.Logic;
 using Vindinium.Common;
 using Vindinium.Common.DataStructures;
+using Vindinium.Common.Entities;
 using Vindinium.Common.Services;
 
 namespace Vindinium.Client.Console
@@ -44,17 +45,18 @@ namespace Vindinium.Client.Console
             Logger.Debug("Challenge Accepted");
             var apiCaller = new ApiCaller();
             var apiEndpoints = new ApiEndpointBuilder(parameters.ApiUri, parameters.ApiKey);
-            IGameServerProxy server = new GameServerProxy(apiCaller, apiEndpoints);
+            var apiResponse = new ApiResponse();
+            IGameServerProxy server = new GameServerProxy(apiCaller, apiEndpoints, apiResponse);
             var bot = new RandomBot();
 
             StartGameEnvironment(server, parameters);
 
             Logger.Debug("View URL: {0}", server.GameResponse.ViewUrl);
 
-            PlayGame(bot, server, server.GameResponse.Game.Id, server.GameResponse.Token, parameters);
-            if (server.ApiResponse.HasError)
+            PlayGame(bot, server, server.GameResponse.Game.Id, server.GameResponse.Token, parameters, apiResponse);
+            if (apiResponse.HasError)
             {
-                Logger.Error(server.ApiResponse.ErrorMessage);
+                Logger.Error(apiResponse.ErrorMessage);
             }
             else
             {
@@ -77,21 +79,21 @@ namespace Vindinium.Client.Console
         }
 
         private static void PlayGame(RandomBot bot, IGameServerProxy server, string gameId, string token,
-            Parameters parameters)
+            Parameters parameters, IApiResponse response)
         {
             do
             {
                 Direction direction = bot.DetermineNextMove();
                 server.Play(gameId, token, direction);
 
-                if (server.ApiResponse.HasError)
+                if (response.HasError)
                 {
-                    Logger.Error(server.ApiResponse.ErrorMessage);
+                    Logger.Error(response.ErrorMessage);
                     return;
                 }
 
                 SaveResponseForTesting(server.GameResponse, parameters.Environment == EnvironmentType.Arena, direction);
-            } while (server.ApiResponse.HasError == false && server.GameResponse.Game.Finished == false &&
+            } while (response.HasError == false && server.GameResponse.Game.Finished == false &&
                      server.GameResponse.Self.Crashed == false);
         }
 

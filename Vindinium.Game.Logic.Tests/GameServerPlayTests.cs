@@ -2,6 +2,7 @@
 using NUnit.Framework;
 using Vindinium.Common;
 using Vindinium.Common.DataStructures;
+using Vindinium.Common.Entities;
 using Vindinium.Common.Services;
 
 namespace Vindinium.Game.Logic.Tests
@@ -12,10 +13,11 @@ namespace Vindinium.Game.Logic.Tests
         [SetUp]
         public void BeforeEachTest()
         {
-            _server = new GameServer(new MapMaker());
+            _server = new GameServer(new MapMaker(), _apiResponse);
         }
 
         private IGameServerProxy _server;
+        private readonly IApiResponse _apiResponse = new MockApiResponse();
 
         private GameResponse Start(string mapText)
         {
@@ -25,17 +27,17 @@ namespace Vindinium.Game.Logic.Tests
         private GameResponse Play(string gameId, string token, Direction direction)
         {
             string text = _server.Play(gameId, token, direction);
-            Assert.That(_server.ApiResponse.HasError, Is.False, _server.ApiResponse.ErrorMessage);
-            Assert.That(_server.ApiResponse.ErrorMessage, Is.Null);
-            Assert.That(_server.ApiResponse.Text, Is.EqualTo(text));
+            Assert.That(_apiResponse.HasError, Is.False, _apiResponse.ErrorMessage);
+            Assert.That(_apiResponse.ErrorMessage, Is.Null);
+            Assert.That(_apiResponse.Text, Is.EqualTo(text));
             return text.JsonToObject<GameResponse>();
         }
 
         private void AssertPlayError(string gameId, string token, Direction direction, string message)
         {
             string text = _server.Play(gameId, token, direction);
-            Assert.That(_server.ApiResponse.HasError, Is.True);
-            Assert.That(_server.ApiResponse.ErrorMessage, Is.EqualTo(message));
+            Assert.That(_apiResponse.HasError, Is.True);
+            Assert.That(_apiResponse.ErrorMessage, Is.EqualTo(message));
             Assert.That(text, Is.EqualTo(message));
         }
 

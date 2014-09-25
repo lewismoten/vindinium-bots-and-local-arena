@@ -2,8 +2,8 @@ namespace Vindinium.Common.Entities
 {
     public interface IApiResponse
     {
-        string ErrorMessage { get; }
-        string Text { get; }
-        bool HasError { get; }
+        string ErrorMessage { get; set; }
+        string Text { get; set; }
+        bool HasError { get; set; }
     }
 }

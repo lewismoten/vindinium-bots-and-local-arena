@@ -38,7 +38,8 @@ namespace Vindinium.Client.Logic
         private static IApiResponse ResponseAsApiResponse(WebResponse response)
         {
             Logger.Trace("ResponseAsApiResponse");
-            return new ApiResponse(ReadResponseStream(response));
+            string text = ReadResponseStream(response);
+            return new ApiResponse {Text = text};
         }
 
         private static string ReadResponseStream(WebResponse response)
@@ -115,7 +116,9 @@ namespace Vindinium.Client.Logic
         private IApiResponse ExceptionAsApiResponse(WebException exception)
         {
             Logger.Trace("ExceptionAsApiResponse - Status: {0}", exception.Status);
-            return ApiResponse.GetError(ReadResponseStream(exception.Response));
+            string message = ReadResponseStream(exception.Response);
+            var response = new ApiResponse {HasError = true, ErrorMessage = message};
+            return response;
         }
     }
 }

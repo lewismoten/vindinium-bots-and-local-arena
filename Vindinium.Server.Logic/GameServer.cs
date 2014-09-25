@@ -14,7 +14,7 @@ namespace Vindinium.Game.Logic
         private const int HealingCost = 2;
         private const int AttackDamage = 20;
         private readonly MapMaker _mapMaker;
-        private IApiResponse _apiResponse;
+        private readonly IApiResponse _apiResponse = new ApiResponse();
         private GameResponse _response = new GameResponse();
 
         public GameServer(MapMaker mapMaker)
@@ -34,15 +34,21 @@ namespace Vindinium.Game.Logic
 
         public string Play(string gameId, string token, Direction direction)
         {
+            _apiResponse.ErrorMessage = null;
+            _apiResponse.HasError = false;
+            _apiResponse.Text = null;
+
             if (token != _response.Token)
             {
-                _apiResponse = Common.Entities.ApiResponse.GetError("Unable to find the token in your game");
-                return ApiResponse.ErrorMessage;
+                _apiResponse.ErrorMessage = "Unable to find the token in your game";
+                _apiResponse.HasError = true;
+                return _apiResponse.ErrorMessage;
             }
             if (gameId != _response.Game.Id)
             {
-                _apiResponse = Common.Entities.ApiResponse.GetError("Unable to find the game");
-                return ApiResponse.ErrorMessage;
+                _apiResponse.ErrorMessage = "Unable to find the game";
+                _apiResponse.HasError = true;
+                return _apiResponse.ErrorMessage;
             }
             Board board = _response.Game.Board;
             var map = new Grid {MapText = board.MapText};
@@ -64,7 +70,7 @@ namespace Vindinium.Game.Logic
                 board.MapText = map.MapText;
                 player.GetWealthy();
                 _response.Self = player;
-                _apiResponse = new ApiResponse(_response.ToJson());
+                _apiResponse.Text = _response.ToJson();
                 return _apiResponse.Text;
             }
         }

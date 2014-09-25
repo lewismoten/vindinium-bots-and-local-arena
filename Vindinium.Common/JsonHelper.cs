@@ -1,4 +1,5 @@
 using System.IO;
+using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text;
 
@@ -20,7 +21,8 @@ namespace Vindinium.Common
         {
             using (var stream = new MemoryStream())
             {
-                var serializer = new DataContractJsonSerializer(typeof (T));
+                var settings = new DataContractJsonSerializerSettings {EmitTypeInformation = EmitTypeInformation.Never};
+                var serializer = new DataContractJsonSerializer(typeof (T), settings);
                 serializer.WriteObject(stream, graph);
                 return Encoding.UTF8.GetString(stream.ToArray());
             }

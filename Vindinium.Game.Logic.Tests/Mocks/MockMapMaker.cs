@@ -2,9 +2,11 @@ namespace Vindinium.Game.Logic.Tests.Mocks
 {
     public class MockMapMaker : IMapMaker
     {
+        public string MapText { get; set; }
+
         public string GenerateMap(int seed)
         {
-            return "@1@2@3@4";
+            return MapText;
         }
     }
 }

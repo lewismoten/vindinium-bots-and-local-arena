@@ -14,7 +14,8 @@ namespace Vindinium.Game.Logic.Tests
         [TestFixtureSetUp]
         public void RunBeforeFirstTest()
         {
-            _server = new GameServer(new MockMapMaker(), new MockApiResponse());
+            var mockMapMaker = new MockMapMaker {MapText = "@1@2@3@4"};
+            _server = new GameServer(mockMapMaker, new MockApiResponse());
             _gameResponse = _server.StartTraining(300).JsonToObject<GameResponse>();
             _game = _gameResponse.Game;
         }
@@ -135,7 +136,7 @@ namespace Vindinium.Game.Logic.Tests
         [Test]
         public void GameBoardSizeCorrespondsToMapTextLength()
         {
-            var board = _gameResponse.Game.Board;
+            Board board = _gameResponse.Game.Board;
             Assert.That(board.Size, Is.EqualTo(Math.Sqrt(board.MapText.Length/2.0)));
         }
 

@@ -14,7 +14,8 @@ namespace Vindinium.Game.Logic.Tests
         [TestFixtureSetUp]
         public void RunBeforeFirstTest()
         {
-            IGameServerProxy server = new GameServer(new MockMapMaker(), new MockApiResponse());
+            var mockMapMaker = new MockMapMaker {MapText = "@1@2@3@4"};
+            IGameServerProxy server = new GameServer(mockMapMaker, new MockApiResponse());
             _gameResponse = server.StartTraining(300).JsonToObject<GameResponse>();
             _game = _gameResponse.Game;
 

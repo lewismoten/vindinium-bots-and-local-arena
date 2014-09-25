@@ -14,16 +14,13 @@ namespace Vindinium.Game.Logic.Tests
         [SetUp]
         public void BeforeEachTest()
         {
-            _server = new GameServer(new MockMapMaker(), _apiResponse);
+            _mockMapMaker = new MockMapMaker();
+            _server = new GameServer(_mockMapMaker, _apiResponse);
         }
 
         private IGameServerProxy _server;
         private readonly IApiResponse _apiResponse = new MockApiResponse();
-
-        private GameResponse Start(string mapText)
-        {
-            return _server.Start(mapText).JsonToObject<GameResponse>();
-        }
+        private MockMapMaker _mockMapMaker;
 
         private GameResponse Play(string gameId, string token, Direction direction)
         {
@@ -48,10 +45,20 @@ namespace Vindinium.Game.Logic.Tests
             Assert.That(response.Game.Board.MapText, Is.EqualTo(mapText));
         }
 
+
+        private GameResponse Start(string mapText)
+
+        {
+            _mockMapMaker.MapText = mapText;
+            return _server.StartArena().JsonToObject<GameResponse>();
+        }
+
         [Test]
         public void KillEnemy()
         {
-            GameResponse response = Start("@2$2@1$2");
+            _mockMapMaker.MapText = "@2$2@1$2";
+            string text = _server.StartArena();
+            var response = text.JsonToObject<GameResponse>();
 
             for (int i = 0; i < 5; i++)
                 response = Play(response.Game.Id, response.Token, Direction.North);

@@ -42,12 +42,12 @@ namespace Vindinium.Client.Logic
         }
 
 
-        public string Start(string mapText)
+        public void ChangeMap(string mapText)
         {
             throw new NotImplementedException();
         }
 
-        public void ChangeMap(string mapText)
+        public string Start(string mapText)
         {
             throw new NotImplementedException();
         }

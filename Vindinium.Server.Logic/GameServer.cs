@@ -81,7 +81,14 @@ namespace Vindinium.Game.Logic
             return Start(EnvironmentType.Arena);
         }
 
-        public string Start(string mapText)
+        public void ChangeMap(string mapText)
+        {
+            var map = new Grid {MapText = mapText};
+            _response.Game.Players.ForEach(p => p.AssignPosAndMinesFromMap(map));
+            _response.Game.Board.MapText = map.MapText;
+        }
+
+        private void Start(string mapText)
         {
             string gameId = Guid.NewGuid().ToString("N").Substring(0, 8);
             string token = Guid.NewGuid().ToString("N").Substring(0, 8);
@@ -107,19 +114,12 @@ namespace Vindinium.Game.Logic
             {
                 _response.Game.Players.Add(CreateHero(grid, i));
             }
-            return _response.ToJson();
-        }
-
-        public void ChangeMap(string mapText)
-        {
-            var map = new Grid {MapText = mapText};
-            _response.Game.Players.ForEach(p => p.AssignPosAndMinesFromMap(map));
-            _response.Game.Board.MapText = map.MapText;
         }
 
         private void MoveDeadPlayers(Grid map)
         {
-            Hero[] misplacedDead = _response.Game.Players.Where(p => p.IsDead() && p.Pos != p.SpawnPos).ToArray();
+            Hero[] misplacedDead =
+                _response.Game.Players.Where(p => p.IsDead() && p.Pos != p.SpawnPos && p.Crashed == false).ToArray();
             do
             {
                 foreach (Hero deadPlayer in misplacedDead)
@@ -132,7 +132,7 @@ namespace Vindinium.Game.Logic
                 misplacedDead = _response.Game.Players.Where(p => p.IsDead() && p.Pos != p.SpawnPos).ToArray();
             } while (misplacedDead.Any());
 
-            _response.Game.Players.ForEach(p => map[p.Pos] = p.PlayerToken());
+            _response.Game.Players.Where(p => p.Crashed == false).ToList().ForEach(p => map[p.Pos] = p.PlayerToken());
         }
 
         private static void ReplaceMapToken(Grid map, string oldToken, string newToken)

@@ -7,7 +7,6 @@ namespace Vindinium.Common.Services
         GameResponse GameResponse { get; }
         string StartTraining(uint turns);
         string StartArena();
-        string Start(string mapText);
         string Play(string gameId, string token, Direction direction);
         void ChangeMap(string mapText);
     }

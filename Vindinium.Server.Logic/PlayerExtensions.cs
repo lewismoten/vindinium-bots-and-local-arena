@@ -81,6 +81,7 @@ namespace Vindinium.Game.Logic
         internal static void AssignPosAndMinesFromMap(this Hero player, Grid map)
         {
             player.Pos = map.PositionOf(player.PlayerToken());
+            if (player.Pos == null) player.Crashed = true;
             player.MineCount = map.TokenCount(player.MineToken());
         }
     }

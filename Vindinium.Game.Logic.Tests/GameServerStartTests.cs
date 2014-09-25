@@ -13,7 +13,7 @@ namespace Vindinium.Game.Logic.Tests
         [TestFixtureSetUp]
         public void RunBeforeFirstTest()
         {
-            IGameServerProxy server = new GameServer();
+            IGameServerProxy server = new GameServer(new MapMaker());
             _gameResponse = server.StartTraining(300).JsonToObject<GameResponse>();
             _game = _gameResponse.Game;
 
@@ -107,7 +107,7 @@ namespace Vindinium.Game.Logic.Tests
         [Test]
         public void EachGameHasADifferentGameId()
         {
-            var server = new GameServer();
+            var server = new GameServer(new MapMaker());
             var game1 = server.StartTraining(3000).JsonToObject<GameResponse>();
             var game2 = server.StartTraining(3000).JsonToObject<GameResponse>();
             Assert.That(game1.Game.Id, Is.Not.EqualTo(game2.Game.Id));
@@ -116,7 +116,7 @@ namespace Vindinium.Game.Logic.Tests
         [Test]
         public void EachGameHasADifferentToken()
         {
-            var server = new GameServer();
+            var server = new GameServer(new MapMaker());
             var game1 = server.StartTraining(3000).JsonToObject<GameResponse>();
             var game2 = server.StartTraining(3000).JsonToObject<GameResponse>();
             Assert.That(game1.Token, Is.Not.EqualTo(game2.Token));

@@ -12,7 +12,7 @@ namespace Vindinium.Game.Logic.Tests
         [SetUp]
         public void BeforeEachTest()
         {
-            _server = new GameServer();
+            _server = new GameServer(new MapMaker());
         }
 
         private IGameServerProxy _server;

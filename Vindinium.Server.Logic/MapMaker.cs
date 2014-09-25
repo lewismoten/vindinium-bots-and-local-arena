@@ -5,11 +5,11 @@ using Vindinium.Common.DataStructures;
 
 namespace Vindinium.Game.Logic
 {
-    public static class MapMaker
+    public class MapMaker
     {
         private const string EdgeToken = "??";
 
-        public static string GenerateMap(int seed)
+        public string GenerateMap(int seed)
         {
             var grid = new Grid();
             var random = new Random(seed);

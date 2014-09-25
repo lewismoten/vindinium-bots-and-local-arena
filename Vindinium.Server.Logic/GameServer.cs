@@ -13,8 +13,14 @@ namespace Vindinium.Game.Logic
         private const int FullLife = 100;
         private const int HealingCost = 2;
         private const int AttackDamage = 20;
+        private readonly MapMaker _mapMaker;
         private IApiResponse _apiResponse;
         private GameResponse _response = new GameResponse();
+
+        public GameServer(MapMaker mapMaker)
+        {
+            _mapMaker = mapMaker;
+        }
 
         public GameResponse GameResponse
         {
@@ -143,7 +149,7 @@ namespace Vindinium.Game.Logic
 
         private void Start()
         {
-            Start(MapMaker.GenerateMap((int) (DateTime.Now.Ticks%int.MaxValue)));
+            Start(_mapMaker.GenerateMap((int) (DateTime.Now.Ticks%int.MaxValue)));
         }
 
 

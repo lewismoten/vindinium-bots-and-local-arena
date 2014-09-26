@@ -40,7 +40,9 @@
   <ItemGroup>
     <Compile Include="AdjacentTokens.cs" />
     <Compile Include="GameServer.cs" />
-    <Compile Include="Grid.cs" />
+    <Compile Include="BoardHelper.cs" />
+    <Compile Include="IGameStateProvider.cs" />
+    <Compile Include="IBoardHelper.cs" />
     <Compile Include="IMapMaker.cs" />
     <Compile Include="MapMaker.cs" />
     <Compile Include="PlayerExtensions.cs" />

@@ -69,7 +69,7 @@ namespace Vindinium.Game.Logic
             players.Where(p => p.IsDead()).ToList().ForEach(p => p.Revive());
         }
 
-        internal static void Attack(this Hero player, Hero enemy, Grid map)
+        internal static void Attack(this Hero player, Hero enemy, IBoardHelper map)
         {
             enemy.Life -= 20;
             if (enemy.IsDead())
@@ -78,7 +78,7 @@ namespace Vindinium.Game.Logic
             }
         }
 
-        internal static void AssignPosAndMinesFromMap(this Hero player, Grid map)
+        internal static void AssignPosAndMinesFromMap(this Hero player, IBoardHelper map)
         {
             player.Pos = map.PositionOf(player.PlayerToken());
             if (player.Pos == null) player.Crashed = true;

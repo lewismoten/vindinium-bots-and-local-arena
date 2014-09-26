@@ -15,7 +15,7 @@ namespace Vindinium.Game.Logic.Tests
         public void RunBeforeFirstTest()
         {
             var mockMapMaker = new MockMapMaker {MapText = "@1@2@3@4"};
-            _server = new GameServer(mockMapMaker, new MockApiResponse());
+            _server = new GameServer(mockMapMaker, new MockApiResponse(), new MockGameStateProvider());
             _gameResponse = _server.StartTraining(300).JsonToObject<GameResponse>();
             _game = _gameResponse.Game;
         }
@@ -82,7 +82,7 @@ namespace Vindinium.Game.Logic.Tests
         [Test]
         public void BoardShowsPlayersAtPositions()
         {
-            var grid = new Grid {MapText = _game.Board.MapText};
+            var grid = new BoardHelper(new Board()) {MapText = _game.Board.MapText};
             foreach (Hero player in _game.Players)
             {
                 string playerToken = string.Format("@{0}", player.Id);

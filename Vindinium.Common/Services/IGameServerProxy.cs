@@ -8,6 +8,5 @@ namespace Vindinium.Common.Services
         string StartTraining(uint turns);
         string StartArena();
         string Play(string gameId, string token, Direction direction);
-        void ChangeMap(string mapText);
     }
 }

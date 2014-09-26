@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+using Vindinium.Common;
+using Vindinium.Common.DataStructures;
 
 namespace Vindinium.Game.Logic.Tests
 {
@@ -14,14 +16,16 @@ namespace Vindinium.Game.Logic.Tests
         private readonly string[] _openTokens = {"  ", "@1", "@2", "@3", "@4"};
         private static readonly IMapMaker MapMaker = new MapMaker();
 
-        private static Grid NewMap(int seed)
+        private static IBoardHelper NewMap(int seed)
         {
-            return new Grid {MapText = MapMaker.GenerateMap(seed)};
+            string mapText = MapMaker.GenerateMap(seed);
+            Console.WriteLine(MapFormatter.FormatTokensAsMap(mapText));
+            return new BoardHelper(new Board()) {MapText = mapText};
         }
 
         private static Dictionary<string, int> TokensOnNewMap(int seed)
         {
-            Grid map = NewMap(seed);
+            IBoardHelper map = NewMap(seed);
             var actualTokens = new Dictionary<string, int>();
             map.ForEach(p =>
             {
@@ -40,7 +44,7 @@ namespace Vindinium.Game.Logic.Tests
 
         private void AssertTokenIsAlwaysBesideAnother(int seed, string token, string[] acceptableNeighbors)
         {
-            var map = new Grid {MapText = MapMaker.GenerateMap(seed)};
+            var map = new BoardHelper(new Board()) {MapText = MapMaker.GenerateMap(seed)};
             map.ForEach(p =>
             {
                 if (map[p] != token) return;
@@ -160,7 +164,7 @@ namespace Vindinium.Game.Logic.Tests
         [Test]
         public void OpenPathBetweenLeftAndRightQuadrant([Random(MinSeed, MaxSeed, SeedCount)] int seed)
         {
-            Grid map = NewMap(seed);
+            IBoardHelper map = NewMap(seed);
             int half = map.Size/2;
             for (int y = 1; y <= half; y++)
             {
@@ -179,8 +183,8 @@ namespace Vindinium.Game.Logic.Tests
             string borderTokens = tokens.Substring(tokens.Length/2, size);
 
             Assert.That(_openTokens.Any(t => borderTokens.IndexOf(t, StringComparison.Ordinal) != -1), Is.True,
-                "Grid does not have open path on quadrant border\r\n{0}",
-                new Grid {MapText = tokens});
+                "boardHelper does not have open path on quadrant border\r\n{0}",
+                MapFormatter.FormatTokensAsMap(tokens));
         }
 
         [Test]

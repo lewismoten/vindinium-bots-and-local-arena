@@ -15,12 +15,14 @@ namespace Vindinium.Game.Logic.Tests
         public void BeforeEachTest()
         {
             _mockMapMaker = new MockMapMaker();
-            _server = new GameServer(_mockMapMaker, _apiResponse);
+            _mockGameStateProvider = new MockGameStateProvider();
+            _server = new GameServer(_mockMapMaker, _apiResponse, _mockGameStateProvider);
         }
 
         private IGameServerProxy _server;
         private readonly IApiResponse _apiResponse = new MockApiResponse();
         private MockMapMaker _mockMapMaker;
+        private MockGameStateProvider _mockGameStateProvider;
 
         private GameResponse Play(string gameId, string token, Direction direction)
         {
@@ -104,7 +106,12 @@ namespace Vindinium.Game.Logic.Tests
         {
             GameResponse response = Start("@1@2@3@4");
             response = Play(response.Game.Id, response.Token, Direction.Stay);
-            _server.ChangeMap("@2@3@4@1"); // pretend players moved to each others spawns
+            _mockGameStateProvider.Game.Game.Board.MapText = "@2@3@4@1";
+            _mockGameStateProvider.Game.Game.Players.First(p => p.Id == 1).Pos = new Pos {X = 2, Y = 2};
+            _mockGameStateProvider.Game.Game.Players.First(p => p.Id == 2).Pos = new Pos {X = 1, Y = 1};
+            _mockGameStateProvider.Game.Game.Players.First(p => p.Id == 3).Pos = new Pos {X = 2, Y = 1};
+            _mockGameStateProvider.Game.Game.Players.First(p => p.Id == 4).Pos = new Pos {X = 1, Y = 2};
+
             response = Play(response.Game.Id, response.Token, Direction.West);
             Assert.That(response.Game.Board.MapText, Is.EqualTo("@2@3@4@1"));
             response = Play(response.Game.Id, response.Token, Direction.West);

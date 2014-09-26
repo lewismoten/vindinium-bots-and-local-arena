@@ -14,13 +14,14 @@ namespace Vindinium.Game.Logic
         private const int HealingCost = 2;
         private const int AttackDamage = 20;
         private readonly IApiResponse _apiResponse;
+        private readonly IGameStateProvider _gameStateProvider;
         private readonly IMapMaker _mapMaker;
-        private GameResponse _response = new GameResponse();
 
-        public GameServer(IMapMaker mapMaker, IApiResponse apiResponse)
+        public GameServer(IMapMaker mapMaker, IApiResponse apiResponse, IGameStateProvider gameStateProvider)
         {
             _mapMaker = mapMaker;
             _apiResponse = apiResponse;
+            _gameStateProvider = gameStateProvider;
         }
 
         public GameResponse GameResponse
@@ -34,41 +35,39 @@ namespace Vindinium.Game.Logic
             _apiResponse.HasError = false;
             _apiResponse.Text = null;
 
-            if (token != _response.Token)
+            if (token != _gameStateProvider.Game.Token)
             {
                 _apiResponse.ErrorMessage = "Unable to find the token in your game";
                 _apiResponse.HasError = true;
                 return _apiResponse.ErrorMessage;
             }
-            if (gameId != _response.Game.Id)
+            if (gameId != _gameStateProvider.Game.Game.Id)
             {
                 _apiResponse.ErrorMessage = "Unable to find the game";
                 _apiResponse.HasError = true;
                 return _apiResponse.ErrorMessage;
             }
-            Board board = _response.Game.Board;
-            var map = new Grid {MapText = board.MapText};
-            lock (map.SynchronizationRoot)
-            {
-                List<Hero> players = _response.Game.Players;
-                Hero player = players.First(p => p.Id == _response.Self.Id);
-                Pos playerPos = player.Pos;
-                Pos targetPos = playerPos + GetTargetOffset(direction);
-                KeepPositionOnMap(targetPos, board.Size);
-                string targetToken = map[targetPos];
+            Board board = _gameStateProvider.Game.Game.Board;
+            IBoardHelper boardHelper = new BoardHelper(_gameStateProvider.Game.Game.Board);
 
-                PlayerMoving(playerPos, map, targetToken, targetPos, player);
-                PlayerMoved(direction, targetToken, player, map);
-                MoveDeadPlayers(map);
-                player.GetThirsty();
-                players.RaiseTheDead();
-                players.ForEach(p => p.AssignPosAndMinesFromMap(map));
-                board.MapText = map.MapText;
-                player.GetWealthy();
-                _response.Self = player;
-                _apiResponse.Text = _response.ToJson();
-                return _apiResponse.Text;
-            }
+            List<Hero> players = _gameStateProvider.Game.Game.Players;
+            Hero player = players.First(p => p.Id == _gameStateProvider.Game.Self.Id);
+            Pos playerPos = player.Pos;
+            Pos targetPos = playerPos + GetTargetOffset(direction);
+            KeepPositionOnMap(targetPos, board.Size);
+            string targetToken = boardHelper[targetPos];
+
+            PlayerMoving(playerPos, boardHelper, targetToken, targetPos, player);
+            PlayerMoved(direction, targetToken, player, boardHelper);
+            MoveDeadPlayers(boardHelper);
+            player.GetThirsty();
+            players.RaiseTheDead();
+            players.ForEach(p => p.AssignPosAndMinesFromMap(boardHelper));
+            board.MapText = boardHelper.MapText;
+            player.GetWealthy();
+            _gameStateProvider.Game.Self = player;
+            _apiResponse.Text = _gameStateProvider.Game.ToJson();
+            return _apiResponse.Text;
         }
 
         public string StartTraining(uint turns)
@@ -81,24 +80,19 @@ namespace Vindinium.Game.Logic
             return Start(EnvironmentType.Arena);
         }
 
-        public void ChangeMap(string mapText)
-        {
-            var map = new Grid {MapText = mapText};
-            _response.Game.Players.ForEach(p => p.AssignPosAndMinesFromMap(map));
-            _response.Game.Board.MapText = map.MapText;
-        }
-
         private void Start(string mapText)
         {
             string gameId = Guid.NewGuid().ToString("N").Substring(0, 8);
             string token = Guid.NewGuid().ToString("N").Substring(0, 8);
 
-            var grid = new Grid {MapText = mapText};
-            _response = new GameResponse
+            var board = new Board();
+            IBoardHelper boardHelper = new BoardHelper(board);
+            boardHelper.MapText = mapText;
+            _gameStateProvider.Game = new GameResponse
             {
                 Game = new Common.DataStructures.Game
                 {
-                    Board = new Board {MapText = grid.MapText, Size = grid.Size},
+                    Board = board,
                     Finished = false,
                     Id = gameId,
                     MaxTurns = 20,
@@ -106,36 +100,42 @@ namespace Vindinium.Game.Logic
                     Turn = 0
                 },
                 PlayUrl = string.Format("http://vindinium.org/api/{0}/{1}/play", gameId, token),
-                Self = CreateHero(grid, 1),
+                Self = CreateHero(boardHelper, 1),
                 Token = token,
                 ViewUrl = string.Format("http://vindinium.org/{0}", gameId)
             };
             for (int i = 1; i <= 4; i++)
             {
-                _response.Game.Players.Add(CreateHero(grid, i));
+                _gameStateProvider.Game.Game.Players.Add(CreateHero(boardHelper, i));
             }
         }
 
-        private void MoveDeadPlayers(Grid map)
+        private void MoveDeadPlayers(IBoardHelper map)
         {
             Hero[] misplacedDead =
-                _response.Game.Players.Where(p => p.IsDead() && p.Pos != p.SpawnPos && p.Crashed == false).ToArray();
+                _gameStateProvider.Game.Game.Players.Where(p => p.IsDead() && p.Pos != p.SpawnPos && p.Crashed == false)
+                    .ToArray();
             do
             {
                 foreach (Hero deadPlayer in misplacedDead)
                 {
                     ReplaceMapToken(map, deadPlayer.MineToken(), TokenHelper.NeutralMine);
-                    _response.Game.Players.Where(p => p.Pos == deadPlayer.SpawnPos).ToList().ForEach(p => p.Die());
+                    _gameStateProvider.Game.Game.Players.Where(p => p.Pos == deadPlayer.SpawnPos)
+                        .ToList()
+                        .ForEach(p => p.Die());
                     map[deadPlayer.Pos] = TokenHelper.OpenPath;
                     deadPlayer.Pos = deadPlayer.SpawnPos;
                 }
-                misplacedDead = _response.Game.Players.Where(p => p.IsDead() && p.Pos != p.SpawnPos).ToArray();
+                misplacedDead =
+                    _gameStateProvider.Game.Game.Players.Where(p => p.IsDead() && p.Pos != p.SpawnPos).ToArray();
             } while (misplacedDead.Any());
 
-            _response.Game.Players.Where(p => p.Crashed == false).ToList().ForEach(p => map[p.Pos] = p.PlayerToken());
+            _gameStateProvider.Game.Game.Players.Where(p => p.Crashed == false)
+                .ToList()
+                .ForEach(p => map[p.Pos] = p.PlayerToken());
         }
 
-        private static void ReplaceMapToken(Grid map, string oldToken, string newToken)
+        private static void ReplaceMapToken(IBoardHelper map, string oldToken, string newToken)
         {
             map.ForEach(p =>
             {
@@ -152,7 +152,7 @@ namespace Vindinium.Game.Logic
         }
 
 
-        private Hero CreateHero(Grid grid, int playerId)
+        private Hero CreateHero(IBoardHelper boardHelper, int playerId)
         {
             var hero = new Hero
             {
@@ -164,17 +164,17 @@ namespace Vindinium.Game.Logic
                 Gold = 0,
                 Crashed = false
             };
-            hero.AssignPosAndMinesFromMap(grid);
+            hero.AssignPosAndMinesFromMap(boardHelper);
             hero.SpawnPos = hero.Pos;
             return hero;
         }
 
-        private void PlayerMoved(Direction direction, string targetToken, Hero player, Grid map)
+        private void PlayerMoved(Direction direction, string targetToken, Hero player, IBoardHelper map)
         {
             if (SteppedIntoEnemy(player, direction, targetToken))
             {
                 int enemyId = int.Parse(targetToken.Substring(1));
-                Hero enemy = _response.Game.Players.First(p => p.Id == enemyId);
+                Hero enemy = _gameStateProvider.Game.Game.Players.First(p => p.Id == enemyId);
                 player.Attack(enemy, map);
             }
         }
@@ -185,7 +185,7 @@ namespace Vindinium.Game.Logic
                    targetToken != player.PlayerToken();
         }
 
-        private void PlayerMoving(Pos playerPos, Grid map, string targetToken, Pos targetPos, Hero player)
+        private void PlayerMoving(Pos playerPos, IBoardHelper map, string targetToken, Pos targetPos, Hero player)
         {
             if (targetToken == TokenHelper.OpenPath)
             {
@@ -193,7 +193,7 @@ namespace Vindinium.Game.Logic
             }
             else if (targetToken == TokenHelper.Tavern)
             {
-                _response.Self.Purchase(HealingCost, hero => hero.Heal());
+                _gameStateProvider.Game.Self.Purchase(HealingCost, hero => hero.Heal());
             }
             else if (TokenHelper.IsMine(targetToken))
             {
@@ -209,18 +209,18 @@ namespace Vindinium.Game.Logic
             if (position.Y > mapSize) position.Y = mapSize;
         }
 
-        private void StepOntoPath(string targetToken, Pos targetPos, Pos playerPos, Grid map)
+        private void StepOntoPath(string targetToken, Pos targetPos, Pos playerPos, IBoardHelper map)
         {
             string playerToken = map[playerPos];
             map[targetPos] = playerToken;
             map[playerPos] = targetToken;
-            _response.Game.Players.Where(p => p.PlayerToken() == playerToken)
+            _gameStateProvider.Game.Game.Players.Where(p => p.PlayerToken() == playerToken)
                 .AsParallel()
                 .ForAll(
                     p => p.Pos = targetPos);
         }
 
-        private void StepIntoMine(Grid map, Pos targetPos, string targetToken, Hero player)
+        private void StepIntoMine(IBoardHelper map, Pos targetPos, string targetToken, Hero player)
         {
             if (targetToken != player.MineToken())
             {
@@ -255,9 +255,11 @@ namespace Vindinium.Game.Logic
             Start();
             if (environmentType == EnvironmentType.Training)
             {
-                _response.Game.Players.Where(p => p.Id != _response.Self.Id).ToList().ForEach(p => p.Elo = null);
+                _gameStateProvider.Game.Game.Players.Where(p => p.Id != _gameStateProvider.Game.Self.Id)
+                    .ToList()
+                    .ForEach(p => p.Elo = null);
             }
-            return _response.ToJson();
+            return _gameStateProvider.Game.ToJson();
         }
     }
 }

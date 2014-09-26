@@ -11,97 +11,99 @@ namespace Vindinium.Game.Logic
 
         public string GenerateMap(int seed)
         {
-            var grid = new Grid();
+            IBoardHelper boardHelper = new BoardHelper(new Board());
             var random = new Random(seed);
             int quarter = random.Next(5, 14);
             int size = quarter*2;
-            grid.MapText = string.Empty.PadLeft(size*size*2, '#');
+            boardHelper.MapText = string.Empty.PadLeft(size*size*2, '#');
 
-            MakePathBetweenQuadrants(grid, random);
-            AddMines(grid, random);
-            AddTavern(grid, random);
-            AddPlayer(grid, random);
+            MakePathBetweenQuadrants(boardHelper, random);
 
-            grid.ForEach(p => { if (grid[p] == EdgeToken) grid[p] = TokenHelper.Obstruction; });
+            AddMines(boardHelper, random);
+            AddTavern(boardHelper, random);
+            AddPlayer(boardHelper, random);
 
-            grid.MakeSymmetric();
-            return grid.MapText;
+            boardHelper.ForEach(p => { if (boardHelper[p] == EdgeToken) boardHelper[p] = TokenHelper.Obstruction; });
+
+            boardHelper.MakeSymmetric();
+            return boardHelper.MapText;
         }
 
-        private static void AddMines(Grid grid, Random random)
+        private static void AddMines(IBoardHelper boardHelper, Random random)
         {
-            List<Pos> edges = FindTokenPositions(grid, EdgeToken);
+            List<Pos> edges = FindTokenPositions(boardHelper, EdgeToken);
 
             int count = random.Next(1, edges.Count());
 
             for (int i = 0; i < count; i++)
             {
-                edges = FindTokenPositions(grid, EdgeToken);
+                edges = FindTokenPositions(boardHelper, EdgeToken);
                 int edgeIndex = random.Next(0, edges.Count());
                 Pos pos = edges[edgeIndex];
-                grid[pos] = TokenHelper.NeutralMine;
+                boardHelper[pos] = TokenHelper.NeutralMine;
             }
         }
 
-        private static void AddTavern(Grid grid, Random random)
+        private static void AddTavern(IBoardHelper boardHelper, Random random)
         {
-            List<Pos> edges = FindTokenPositions(grid, EdgeToken);
+            List<Pos> edges = FindTokenPositions(boardHelper, EdgeToken);
             int edgeIndex = random.Next(0, edges.Count());
             Pos pos = edges[edgeIndex];
-            grid[pos] = TokenHelper.Tavern;
+            boardHelper[pos] = TokenHelper.Tavern;
         }
 
-        private static void AddPlayer(Grid grid, Random random)
+        private static void AddPlayer(IBoardHelper boardHelper, Random random)
         {
-            List<Pos> edges = FindTokenPositions(grid, TokenHelper.OpenPath);
+            List<Pos> edges = FindTokenPositions(boardHelper, TokenHelper.OpenPath);
             int edgeIndex = random.Next(0, edges.Count());
             Pos pos = edges[edgeIndex];
-            grid[pos] = TokenHelper.Player(0);
+            boardHelper[pos] = TokenHelper.Player(0);
         }
 
-        private static List<Pos> FindTokenPositions(Grid grid, string token)
+        private static List<Pos> FindTokenPositions(IBoardHelper boardHelper, string token)
         {
-            int quarter = grid.Size/2;
+            int quarter = boardHelper.Size/2;
             var positions = new List<Pos>();
-            grid.ForEach(p => { if (p.X <= quarter && p.Y <= quarter && grid[p] == token) positions.Add(p); });
+            boardHelper.ForEach(
+                p => { if (p.X <= quarter && p.Y <= quarter && boardHelper[p] == token) positions.Add(p); });
             return positions;
         }
 
-        private static void MakePathBetweenQuadrants(Grid grid, Random random)
+        private static void MakePathBetweenQuadrants(IBoardHelper boardHelper, Random random)
         {
-            int quarter = grid.Size/2;
+            int quarter = boardHelper.Size/2;
             var pos = new Pos {Y = quarter, X = random.Next(1, quarter + 1)};
-            AdjacentTokens tokenPositions = grid.GetAdjacentTokens(pos);
-            OpenPathAndMarkEdges(grid, tokenPositions);
+            AdjacentTokens tokenPositions = boardHelper.GetAdjacentTokens(pos);
+            OpenPathAndMarkEdges(boardHelper, tokenPositions);
             do
             {
-                List<Pos> edges = FindTokenPositions(grid, EdgeToken);
+                List<Pos> edges = FindTokenPositions(boardHelper, EdgeToken);
                 int edgeIndex = random.Next(0, edges.Count());
                 pos = edges[edgeIndex];
-                tokenPositions = grid.GetAdjacentTokens(pos);
-                OpenPathAndMarkEdges(grid, tokenPositions);
+                tokenPositions = boardHelper.GetAdjacentTokens(pos);
+                OpenPathAndMarkEdges(boardHelper, tokenPositions);
             } while (pos.X != quarter);
         }
 
-        private static void OpenPathAndMarkEdges(Grid grid, AdjacentTokens tokenPositions)
+        private static void OpenPathAndMarkEdges(IBoardHelper boardHelper, AdjacentTokens tokenPositions)
         {
-            grid[tokenPositions.Stay.Position] = TokenHelper.OpenPath;
+            boardHelper[tokenPositions.Stay.Position] = TokenHelper.OpenPath;
 
             if (tokenPositions.North.Token == TokenHelper.Obstruction)
             {
-                grid[tokenPositions.North.Position] = EdgeToken;
+                boardHelper[tokenPositions.North.Position] = EdgeToken;
             }
             if (tokenPositions.East.Token == TokenHelper.Obstruction)
             {
-                grid[tokenPositions.East.Position] = EdgeToken;
+                boardHelper[tokenPositions.East.Position] = EdgeToken;
             }
             if (tokenPositions.West.Token == TokenHelper.Obstruction)
             {
-                grid[tokenPositions.West.Position] = EdgeToken;
+                boardHelper[tokenPositions.West.Position] = EdgeToken;
             }
             if (tokenPositions.South.Token == TokenHelper.Obstruction)
             {
-                grid[tokenPositions.South.Position] = EdgeToken;
+                boardHelper[tokenPositions.South.Position] = EdgeToken;
             }
         }
     }

@@ -1,5 +1,4 @@
-﻿using System;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using Vindinium.Common;
 using Vindinium.Common.DataStructures;
 using Vindinium.Common.Services;

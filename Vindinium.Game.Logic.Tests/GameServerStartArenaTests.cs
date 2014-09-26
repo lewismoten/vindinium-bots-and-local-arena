@@ -17,8 +17,6 @@ namespace Vindinium.Game.Logic.Tests
             IGameServerProxy server = new GameServer(mockMapMaker, new MockApiResponse(), new MockGameStateProvider());
             _gameResponse = server.StartArena().JsonToObject<GameResponse>();
             _game = _gameResponse.Game;
-
-            Console.WriteLine(_game.Board);
         }
 
         private GameResponse _gameResponse;

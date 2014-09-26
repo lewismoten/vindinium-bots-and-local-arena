@@ -19,7 +19,6 @@ namespace Vindinium.Game.Logic.Tests
         private static IBoardHelper NewMap(int seed)
         {
             string mapText = MapMaker.GenerateMap(seed);
-            Console.WriteLine(MapFormatter.FormatTokensAsMap(mapText));
             return new BoardHelper(new Board()) {MapText = mapText};
         }
 

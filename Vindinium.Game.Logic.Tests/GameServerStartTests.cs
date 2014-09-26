@@ -82,7 +82,7 @@ namespace Vindinium.Game.Logic.Tests
         [Test]
         public void BoardShowsPlayersAtPositions()
         {
-            var grid = new BoardHelper(new Board()) {MapText = _game.Board.MapText};
+            var grid = new BoardHelper(_game.Board);
             foreach (Hero player in _game.Players)
             {
                 string playerToken = string.Format("@{0}", player.Id);

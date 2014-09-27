@@ -59,7 +59,7 @@ namespace Vindinium.Game.Logic
 
             PlayerMoving(playerPos, boardHelper, targetToken, targetPos, player);
             PlayerMoved(direction, targetToken, player, boardHelper);
-            MoveDeadPlayers(boardHelper);
+            MoveDeadPlayers(boardHelper, players);
             player.GetThirsty();
             players.RaiseTheDead();
             players.ForEach(p => p.AssignPosAndMinesFromMap(boardHelper));
@@ -107,27 +107,27 @@ namespace Vindinium.Game.Logic
             }
         }
 
-        private void MoveDeadPlayers(IBoardHelper map)
+        private void MoveDeadPlayers(IBoardHelper map, List<Hero> players)
         {
             Hero[] misplacedDead =
-                _gameStateProvider.Game.Game.Players.Where(p => p.IsDead() && p.Pos != p.SpawnPos && p.Crashed == false)
+                players.Where(p => p.IsDead() && p.Pos != p.SpawnPos && p.Crashed == false)
                     .ToArray();
             do
             {
                 foreach (Hero deadPlayer in misplacedDead)
                 {
                     ReplaceMapToken(map, deadPlayer.MineToken(), TokenHelper.NeutralMine);
-                    _gameStateProvider.Game.Game.Players.Where(p => p.Pos == deadPlayer.SpawnPos)
+                    players.Where(p => p.Pos == deadPlayer.SpawnPos)
                         .ToList()
                         .ForEach(p => p.Die());
                     map[deadPlayer.Pos] = TokenHelper.OpenPath;
                     deadPlayer.Pos = deadPlayer.SpawnPos;
                 }
                 misplacedDead =
-                    _gameStateProvider.Game.Game.Players.Where(p => p.IsDead() && p.Pos != p.SpawnPos).ToArray();
+                    players.Where(p => p.IsDead() && p.Pos != p.SpawnPos).ToArray();
             } while (misplacedDead.Any());
 
-            _gameStateProvider.Game.Game.Players.Where(p => p.Crashed == false)
+            players.Where(p => p.Crashed == false)
                 .ToList()
                 .ForEach(p => map[p.Pos] = p.PlayerToken());
         }

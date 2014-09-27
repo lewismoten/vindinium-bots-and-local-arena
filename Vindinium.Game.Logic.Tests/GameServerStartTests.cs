@@ -16,7 +16,7 @@ namespace Vindinium.Game.Logic.Tests
         {
             var mockMapMaker = new MockMapMaker {MapText = "@1@2@3@4"};
             _server = new GameServer(mockMapMaker, new MockApiResponse(), new MockGameStateProvider());
-            _gameResponse = _server.StartTraining(300).JsonToObject<GameResponse>();
+            _gameResponse = _server.StartTraining(300).Text.JsonToObject<GameResponse>();
             _game = _gameResponse.Game;
         }
 
@@ -107,16 +107,16 @@ namespace Vindinium.Game.Logic.Tests
         [Test]
         public void EachGameHasADifferentGameId()
         {
-            var game1 = _server.StartTraining(3000).JsonToObject<GameResponse>();
-            var game2 = _server.StartTraining(3000).JsonToObject<GameResponse>();
+            var game1 = _server.StartTraining(3000).Text.JsonToObject<GameResponse>();
+            var game2 = _server.StartTraining(3000).Text.JsonToObject<GameResponse>();
             Assert.That(game1.Game.Id, Is.Not.EqualTo(game2.Game.Id));
         }
 
         [Test]
         public void EachGameHasADifferentToken()
         {
-            var game1 = _server.StartTraining(3000).JsonToObject<GameResponse>();
-            var game2 = _server.StartTraining(3000).JsonToObject<GameResponse>();
+            var game1 = _server.StartTraining(3000).Text.JsonToObject<GameResponse>();
+            var game2 = _server.StartTraining(3000).Text.JsonToObject<GameResponse>();
             Assert.That(game1.Token, Is.Not.EqualTo(game2.Token));
         }
 

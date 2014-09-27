@@ -10,7 +10,7 @@ namespace Vindinium.Game.Logic.Tests
     [TestFixture]
     public class MapMakerTests
     {
-        private const int SeedCount = 25;
+        private const int SeedCount = 1;
         private const int MaxSeed = int.MaxValue;
         private const int MinSeed = int.MinValue;
         private readonly string[] _openTokens = {"  ", "@1", "@2", "@3", "@4"};

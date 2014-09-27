@@ -29,7 +29,7 @@ namespace Vindinium.Game.Logic
             get { return null; }
         }
 
-        public string Play(string gameId, string token, Direction direction)
+        public IApiResponse Play(string gameId, string token, Direction direction)
         {
             GameResponse gameResponse = _gameStateProvider.Game;
 
@@ -72,25 +72,25 @@ namespace Vindinium.Game.Logic
             _apiResponse.ErrorMessage = null;
             _apiResponse.HasError = false;
             _apiResponse.Text = gameResponse.ToJson();
-            return _apiResponse.Text;
+            return _apiResponse;
         }
 
-        public string StartTraining(uint turns)
+        public IApiResponse StartTraining(uint turns)
         {
             return Start(EnvironmentType.Training);
         }
 
-        public string StartArena()
+        public IApiResponse StartArena()
         {
             return Start(EnvironmentType.Arena);
         }
 
-        private string Error(string message)
+        private IApiResponse Error(string message)
         {
             _apiResponse.Text = null;
             _apiResponse.ErrorMessage = message;
             _apiResponse.HasError = true;
-            return _apiResponse.ErrorMessage;
+            return _apiResponse;
         }
 
         private void Start(IBoardHelper boardHelper)
@@ -262,7 +262,7 @@ namespace Vindinium.Game.Logic
         }
 
 
-        private string Start(EnvironmentType environmentType)
+        private IApiResponse Start(EnvironmentType environmentType)
         {
             Start();
             if (environmentType == EnvironmentType.Training)
@@ -271,7 +271,10 @@ namespace Vindinium.Game.Logic
                     .ToList()
                     .ForEach(p => p.Elo = null);
             }
-            return _gameStateProvider.Game.ToJson();
+            _apiResponse.HasError = false;
+            _apiResponse.ErrorMessage = null;
+            _apiResponse.Text = _gameStateProvider.Game.ToJson();
+            return _apiResponse;
         }
     }
 }

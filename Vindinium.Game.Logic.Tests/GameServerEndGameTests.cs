@@ -27,10 +27,13 @@ namespace Vindinium.Game.Logic.Tests
                 Game = new Common.DataStructures.Game()
             };
 
-            string response = _server.Play(_mockGameStateProvider.Game.Game.Id, _mockGameStateProvider.Game.Token,
+            IApiResponse apiResponse = _server.Play(_mockGameStateProvider.Game.Game.Id,
+                _mockGameStateProvider.Game.Token,
                 Direction.Stay);
 
-            Assert.That(response, Is.EqualTo("You have crashed and can no longer play"));
+            Assert.That(_apiResponse.Text, Is.Null);
+            Assert.That(_apiResponse.HasError, Is.True);
+            Assert.That(_apiResponse.ErrorMessage, Is.EqualTo("You have crashed and can no longer play"));
         }
 
         [Test]
@@ -47,10 +50,12 @@ namespace Vindinium.Game.Logic.Tests
                 }
             };
 
-            string response = _server.Play(_mockGameStateProvider.Game.Game.Id, _mockGameStateProvider.Game.Token,
+            IApiResponse response = _server.Play(_mockGameStateProvider.Game.Game.Id, _mockGameStateProvider.Game.Token,
                 Direction.Stay);
 
-            Assert.That(response, Is.EqualTo("Game has finished"));
+            Assert.That(_apiResponse.Text, Is.Null);
+            Assert.That(_apiResponse.HasError, Is.True);
+            Assert.That(_apiResponse.ErrorMessage, Is.EqualTo("Game has finished"));
         }
     }
 }

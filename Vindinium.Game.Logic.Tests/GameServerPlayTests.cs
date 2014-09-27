@@ -26,24 +26,25 @@ namespace Vindinium.Game.Logic.Tests
 
         private GameResponse Play(string gameId, string token, Direction direction)
         {
-            string text = _server.Play(gameId, token, direction);
+            IApiResponse response = _server.Play(gameId, token, direction);
+            Assert.That(response, Is.SameAs(_apiResponse));
             Assert.That(_apiResponse.HasError, Is.False, _apiResponse.ErrorMessage);
             Assert.That(_apiResponse.ErrorMessage, Is.Null);
-            Assert.That(_apiResponse.Text, Is.EqualTo(text));
-            return text.JsonToObject<GameResponse>();
+            Assert.That(_apiResponse.Text, Is.Not.Null);
+            return _apiResponse.Text.JsonToObject<GameResponse>();
         }
 
         private void AssertPlayError(string gameId, string token, Direction direction, string message)
         {
-            string text = _server.Play(gameId, token, direction);
+            _server.Play(gameId, token, direction);
             Assert.That(_apiResponse.HasError, Is.True);
             Assert.That(_apiResponse.ErrorMessage, Is.EqualTo(message));
-            Assert.That(text, Is.EqualTo(message));
+            Assert.That(_apiResponse.Text, Is.Null);
         }
 
         private void AssertPlayHasMapText(string gameId, string token, Direction direction, string mapText)
         {
-            var response = _server.Play(gameId, token, direction).JsonToObject<GameResponse>();
+            var response = _server.Play(gameId, token, direction).Text.JsonToObject<GameResponse>();
             Assert.That(response.Game.Board.MapText, Is.EqualTo(mapText));
         }
 
@@ -52,14 +53,14 @@ namespace Vindinium.Game.Logic.Tests
 
         {
             _mockMapMaker.MapText = mapText;
-            return _server.StartArena().JsonToObject<GameResponse>();
+            return _server.StartArena().Text.JsonToObject<GameResponse>();
         }
 
         [Test]
         public void KillEnemy()
         {
             _mockMapMaker.MapText = "@2$2@1$2";
-            string text = _server.StartArena();
+            string text = _server.StartArena().Text;
             var response = text.JsonToObject<GameResponse>();
 
             for (int i = 0; i < 5; i++)

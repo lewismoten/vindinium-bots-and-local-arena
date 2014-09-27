@@ -20,31 +20,32 @@ namespace Vindinium.Client.Logic
 
         public GameResponse GameResponse { get; private set; }
 
-        public string StartTraining(uint turns)
+        public IApiResponse StartTraining(uint turns)
         {
-            return CallApi(_endpointBuilder.StartTraining(turns), _apiResponse);
+            CallApi(_endpointBuilder.StartTraining(turns), _apiResponse);
+            return _apiResponse;
         }
 
-        public string StartArena()
+        public IApiResponse StartArena()
         {
-            return CallApi(_endpointBuilder.StartArena(), _apiResponse);
+            CallApi(_endpointBuilder.StartArena(), _apiResponse);
+            return _apiResponse;
         }
 
-        public string Play(string gameId, string token, Direction direction)
+        public IApiResponse Play(string gameId, string token, Direction direction)
         {
-            return CallApi(_endpointBuilder.Play(gameId, token, direction), _apiResponse);
+            CallApi(_endpointBuilder.Play(gameId, token, direction), _apiResponse);
+            return _apiResponse;
         }
 
-        private string CallApi(IApiRequest request, IApiResponse response)
+        private void CallApi(IApiRequest request, IApiResponse response)
         {
             _caller.Call(request, response);
             if (response.HasError)
             {
                 GameResponse = null;
-                return response.ErrorMessage;
             }
             GameResponse = response.Text.JsonToObject<GameResponse>();
-            return response.Text;
         }
     }
 }

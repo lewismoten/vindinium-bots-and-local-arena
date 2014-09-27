@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using Vindinium.Common;
-using Vindinium.Common.DataStructures;
+using Vindinium.Game.Logic.Tests.Mocks;
 
 namespace Vindinium.Game.Logic.Tests
 {
@@ -18,8 +18,9 @@ namespace Vindinium.Game.Logic.Tests
 
         private static IBoardHelper NewMap(int seed)
         {
-            string mapText = MapMaker.GenerateMap(seed);
-            return new BoardHelper(new Board()) {MapText = mapText};
+            var mockBoardHelper = new MockBoardHelper();
+            MapMaker.GenerateMap(seed, mockBoardHelper);
+            return mockBoardHelper;
         }
 
         private static Dictionary<string, int> TokensOnNewMap(int seed)
@@ -43,11 +44,12 @@ namespace Vindinium.Game.Logic.Tests
 
         private void AssertTokenIsAlwaysBesideAnother(int seed, string token, string[] acceptableNeighbors)
         {
-            var map = new BoardHelper(new Board()) {MapText = MapMaker.GenerateMap(seed)};
-            map.ForEach(p =>
+            var boardHelper = new MockBoardHelper();
+            MapMaker.GenerateMap(seed, boardHelper);
+            boardHelper.ForEach(p =>
             {
-                if (map[p] != token) return;
-                AdjacentTokens adjacentTokens = map.GetAdjacentTokens(p);
+                if (boardHelper[p] != token) return;
+                AdjacentTokens adjacentTokens = boardHelper.GetAdjacentTokens(p);
                 var actualNeighbors = new[]
                 {
                     adjacentTokens.North.Token,
@@ -62,7 +64,7 @@ namespace Vindinium.Game.Logic.Tests
                     token,
                     p,
                     string.Join("', '", acceptableNeighbors),
-                    map
+                    boardHelper
                     );
             });
         }
@@ -120,7 +122,8 @@ namespace Vindinium.Game.Logic.Tests
         [Test]
         public void MapIsSymmetric([Random(MinSeed, MaxSeed, SeedCount)] int seed)
         {
-            string map = MapMaker.GenerateMap(seed);
+            var boardHelper = new MockBoardHelper();
+            string map = MapMaker.GenerateMap(seed, boardHelper);
 
             map = map.Replace("$-", "$$")
                 .Replace("[]", "[[")
@@ -145,7 +148,7 @@ namespace Vindinium.Game.Logic.Tests
         [Test]
         public void MapTextIsExpectedLength([Random(MinSeed, MaxSeed, SeedCount)] int seed)
         {
-            string text = MapMaker.GenerateMap(seed);
+            string text = MapMaker.GenerateMap(seed, new MockBoardHelper());
             int cells = text.Length/2;
             double size = Math.Sqrt(cells);
             Assert.That(size, Is.EqualTo(Math.Floor(size)));
@@ -175,7 +178,7 @@ namespace Vindinium.Game.Logic.Tests
         [Test]
         public void OpenPathBetweenTopAndBottomQuadrant([Random(MinSeed, MaxSeed, SeedCount)] int seed)
         {
-            string tokens = MapMaker.GenerateMap(seed);
+            string tokens = MapMaker.GenerateMap(seed, new MockBoardHelper());
             var size = (int) Math.Sqrt(tokens.Length/2.0);
 
             // first line of tokens in bottom left quadrant

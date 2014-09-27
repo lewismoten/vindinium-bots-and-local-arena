@@ -9,9 +9,8 @@ namespace Vindinium.Game.Logic
     {
         private const string EdgeToken = "??";
 
-        public string GenerateMap(int seed)
+        public string GenerateMap(int seed, IBoardHelper boardHelper)
         {
-            IBoardHelper boardHelper = new BoardHelper(new Board());
             var random = new Random(seed);
             int quarter = random.Next(5, 14);
             int size = quarter*2;

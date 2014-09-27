@@ -1,5 +1,4 @@
-﻿using System;
-using Vindinium.Common;
+﻿using Vindinium.Common;
 using Vindinium.Common.DataStructures;
 using Vindinium.Common.Entities;
 using Vindinium.Common.Services;
@@ -19,11 +18,6 @@ namespace Vindinium.Client.Logic
             _apiResponse = apiResponse;
         }
 
-        public IApiResponse ApiResponse
-        {
-            get { return _apiResponse; }
-        }
-
         public GameResponse GameResponse { get; private set; }
 
         public string StartTraining(uint turns)
@@ -39,17 +33,6 @@ namespace Vindinium.Client.Logic
         public string Play(string gameId, string token, Direction direction)
         {
             return CallApi(_endpointBuilder.Play(gameId, token, direction), _apiResponse);
-        }
-
-
-        public void ChangeMap(string mapText)
-        {
-            throw new NotImplementedException();
-        }
-
-        public string Start(string mapText)
-        {
-            throw new NotImplementedException();
         }
 
         private string CallApi(IApiRequest request, IApiResponse response)

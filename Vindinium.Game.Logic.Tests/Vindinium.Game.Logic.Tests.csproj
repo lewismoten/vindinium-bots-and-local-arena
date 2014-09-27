@@ -47,6 +47,7 @@
     <Compile Include="GridTests.cs" />
     <Compile Include="MapMakerTests.cs" />
     <Compile Include="Mocks\MockApiResponse.cs" />
+    <Compile Include="Mocks\MockBoardHelper.cs" />
     <Compile Include="Mocks\MockGameStateProvider.cs" />
     <Compile Include="Mocks\MockMapMaker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

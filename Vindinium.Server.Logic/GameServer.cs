@@ -148,7 +148,10 @@ namespace Vindinium.Game.Logic
 
         private void Start()
         {
-            Start(_mapMaker.GenerateMap((int) (DateTime.Now.Ticks%int.MaxValue)));
+            var boardHelper = new BoardHelper(new Board());
+            var seed = (int) (DateTime.Now.Ticks%int.MaxValue);
+
+            Start(_mapMaker.GenerateMap(seed, boardHelper));
         }
 
 

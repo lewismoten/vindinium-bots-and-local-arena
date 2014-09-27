@@ -80,19 +80,16 @@ namespace Vindinium.Game.Logic
             return Start(EnvironmentType.Arena);
         }
 
-        private void Start(string mapText)
+        private void Start(IBoardHelper boardHelper)
         {
             string gameId = Guid.NewGuid().ToString("N").Substring(0, 8);
             string token = Guid.NewGuid().ToString("N").Substring(0, 8);
 
-            var board = new Board();
-            IBoardHelper boardHelper = new BoardHelper(board);
-            boardHelper.MapText = mapText;
             _gameStateProvider.Game = new GameResponse
             {
                 Game = new Common.DataStructures.Game
                 {
-                    Board = board,
+                    Board = boardHelper.UnderlyingBoard,
                     Finished = false,
                     Id = gameId,
                     MaxTurns = 20,
@@ -148,12 +145,11 @@ namespace Vindinium.Game.Logic
 
         private void Start()
         {
-            var boardHelper = new BoardHelper(new Board());
-            var seed = (int) (DateTime.Now.Ticks%int.MaxValue);
-
-            Start(_mapMaker.GenerateMap(seed, boardHelper));
+            var board = new Board();
+            var boardHelper = new BoardHelper(board);
+            _mapMaker.GenerateMap(boardHelper);
+            Start(boardHelper);
         }
-
 
         private Hero CreateHero(IBoardHelper boardHelper, int playerId)
         {

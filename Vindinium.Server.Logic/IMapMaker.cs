@@ -2,6 +2,6 @@ namespace Vindinium.Game.Logic
 {
     public interface IMapMaker
     {
-        string GenerateMap(int seed, IBoardHelper boardHelper);
+        void GenerateMap(IBoardHelper boardHelper);
     }
 }

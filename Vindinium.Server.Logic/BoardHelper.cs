@@ -59,7 +59,8 @@ namespace Vindinium.Game.Logic
             if (index == -1) return null;
             index = index/2;
 
-            return new Pos {X = (index%(Size)) + 1, Y = ((index - (index%(Size)))/Size + 1)};
+            int x = (index%(Size));
+            return new Pos {X = x + 1, Y = ((index - x)/Size + 1)};
         }
 
         public void ForEach(Action<Pos> action)
@@ -114,6 +115,11 @@ namespace Vindinium.Game.Logic
                 East = AddTokenPosition(pos + new Pos {X = 1}),
                 West = AddTokenPosition(pos + new Pos {X = -1})
             };
+        }
+
+        public Board UnderlyingBoard
+        {
+            get { return _board; }
         }
 
         private int StringIndex(int x, int y)

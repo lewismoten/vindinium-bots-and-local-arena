@@ -4,9 +4,9 @@ namespace Vindinium.Game.Logic.Tests.Mocks
     {
         public string MapText { get; set; }
 
-        public string GenerateMap(int seed, IBoardHelper boardHelper)
+        public void GenerateMap(IBoardHelper boardHelper)
         {
-            return MapText;
+            boardHelper.MapText = MapText;
         }
     }
 }

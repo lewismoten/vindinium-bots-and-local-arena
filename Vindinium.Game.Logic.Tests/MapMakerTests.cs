@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using Vindinium.Common;
+using Vindinium.Common.DataStructures;
 using Vindinium.Game.Logic.Tests.Mocks;
 
 namespace Vindinium.Game.Logic.Tests
@@ -14,22 +15,18 @@ namespace Vindinium.Game.Logic.Tests
         private const int MaxSeed = int.MaxValue;
         private const int MinSeed = int.MinValue;
         private readonly string[] _openTokens = {"  ", "@1", "@2", "@3", "@4"};
-        private static readonly IMapMaker MapMaker = new MapMaker();
-
-        private static IBoardHelper NewMap(int seed)
-        {
-            var mockBoardHelper = new MockBoardHelper();
-            MapMaker.GenerateMap(seed, mockBoardHelper);
-            return mockBoardHelper;
-        }
 
         private static Dictionary<string, int> TokensOnNewMap(int seed)
         {
-            IBoardHelper map = NewMap(seed);
+            var board = new Board();
+            IBoardHelper boardHelper = new BoardHelper(board);
+            var mapmaker = new MapMaker(new MockRandomizer(seed));
+            mapmaker.GenerateMap(boardHelper);
+
             var actualTokens = new Dictionary<string, int>();
-            map.ForEach(p =>
+            boardHelper.ForEach(p =>
             {
-                string token = map[p];
+                string token = boardHelper[p];
                 if (actualTokens.ContainsKey(token))
                 {
                     actualTokens[token]++;
@@ -44,8 +41,11 @@ namespace Vindinium.Game.Logic.Tests
 
         private void AssertTokenIsAlwaysBesideAnother(int seed, string token, string[] acceptableNeighbors)
         {
-            var boardHelper = new MockBoardHelper();
-            MapMaker.GenerateMap(seed, boardHelper);
+            var board = new Board();
+            IBoardHelper boardHelper = new BoardHelper(board);
+            var mapmaker = new MapMaker(new MockRandomizer(seed));
+            mapmaker.GenerateMap(boardHelper);
+
             boardHelper.ForEach(p =>
             {
                 if (boardHelper[p] != token) return;
@@ -122,10 +122,12 @@ namespace Vindinium.Game.Logic.Tests
         [Test]
         public void MapIsSymmetric([Random(MinSeed, MaxSeed, SeedCount)] int seed)
         {
-            var boardHelper = new MockBoardHelper();
-            string map = MapMaker.GenerateMap(seed, boardHelper);
+            var board = new Board();
+            IBoardHelper boardHelper = new BoardHelper(board);
+            var mapmaker = new MapMaker(new MockRandomizer(seed));
+            mapmaker.GenerateMap(boardHelper);
 
-            map = map.Replace("$-", "$$")
+            string map = board.MapText.Replace("$-", "$$")
                 .Replace("[]", "[[")
                 .Replace("@1", "@@")
                 .Replace("@2", "@@")
@@ -148,7 +150,12 @@ namespace Vindinium.Game.Logic.Tests
         [Test]
         public void MapTextIsExpectedLength([Random(MinSeed, MaxSeed, SeedCount)] int seed)
         {
-            string text = MapMaker.GenerateMap(seed, new MockBoardHelper());
+            var board = new Board();
+            IBoardHelper boardHelper = new BoardHelper(board);
+            var mapmaker = new MapMaker(new MockRandomizer(seed));
+            mapmaker.GenerateMap(boardHelper);
+            string text = board.MapText;
+
             int cells = text.Length/2;
             double size = Math.Sqrt(cells);
             Assert.That(size, Is.EqualTo(Math.Floor(size)));
@@ -166,19 +173,28 @@ namespace Vindinium.Game.Logic.Tests
         [Test]
         public void OpenPathBetweenLeftAndRightQuadrant([Random(MinSeed, MaxSeed, SeedCount)] int seed)
         {
-            IBoardHelper map = NewMap(seed);
-            int half = map.Size/2;
+            var board = new Board();
+            IBoardHelper boardHelper = new BoardHelper(board);
+            var mapmaker = new MapMaker(new MockRandomizer(seed));
+            mapmaker.GenerateMap(boardHelper);
+
+            int half = boardHelper.Size/2;
             for (int y = 1; y <= half; y++)
             {
-                if (_openTokens.Any(t => t == map[half, y])) Assert.Pass();
+                if (_openTokens.Any(t => t == boardHelper[half, y])) Assert.Pass();
             }
-            Assert.Fail("Missing path at top-left quardrent on right edge.\r\n{0}", map);
+            Assert.Fail("Missing path at top-left quardrent on right edge.\r\n{0}", board);
         }
 
         [Test]
         public void OpenPathBetweenTopAndBottomQuadrant([Random(MinSeed, MaxSeed, SeedCount)] int seed)
         {
-            string tokens = MapMaker.GenerateMap(seed, new MockBoardHelper());
+            var board = new Board();
+            IBoardHelper boardHelper = new BoardHelper(board);
+            var mapmaker = new MapMaker(new MockRandomizer(seed));
+            mapmaker.GenerateMap(boardHelper);
+
+            string tokens = board.MapText;
             var size = (int) Math.Sqrt(tokens.Length/2.0);
 
             // first line of tokens in bottom left quadrant

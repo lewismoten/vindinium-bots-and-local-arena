@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Vindinium.Common.DataStructures;
 
@@ -8,53 +7,57 @@ namespace Vindinium.Game.Logic
     public class MapMaker : IMapMaker
     {
         private const string EdgeToken = "??";
+        private readonly IRandomizer _randomizer;
 
-        public string GenerateMap(int seed, IBoardHelper boardHelper)
+        public MapMaker(IRandomizer randomizer)
         {
-            var random = new Random(seed);
-            int quarter = random.Next(5, 14);
+            _randomizer = randomizer;
+        }
+
+        public void GenerateMap(IBoardHelper boardHelper)
+        {
+            int quarter = _randomizer.Next(5, 14);
             int size = quarter*2;
             boardHelper.MapText = string.Empty.PadLeft(size*size*2, '#');
 
-            MakePathBetweenQuadrants(boardHelper, random);
+            MakePathBetweenQuadrants(boardHelper);
 
-            AddMines(boardHelper, random);
-            AddTavern(boardHelper, random);
-            AddPlayer(boardHelper, random);
+            AddMines(boardHelper);
+            AddTavern(boardHelper);
+            AddPlayer(boardHelper);
 
             boardHelper.ForEach(p => { if (boardHelper[p] == EdgeToken) boardHelper[p] = TokenHelper.Obstruction; });
 
             boardHelper.MakeSymmetric();
-            return boardHelper.MapText;
         }
 
-        private static void AddMines(IBoardHelper boardHelper, Random random)
+        private void AddMines(IBoardHelper boardHelper)
         {
             List<Pos> edges = FindTokenPositions(boardHelper, EdgeToken);
 
-            int count = random.Next(1, edges.Count());
+            int count = _randomizer.Next(1, edges.Count());
 
             for (int i = 0; i < count; i++)
             {
                 edges = FindTokenPositions(boardHelper, EdgeToken);
-                int edgeIndex = random.Next(0, edges.Count());
+                int edgeIndex = _randomizer.Next(0, edges.Count());
                 Pos pos = edges[edgeIndex];
                 boardHelper[pos] = TokenHelper.NeutralMine;
             }
         }
 
-        private static void AddTavern(IBoardHelper boardHelper, Random random)
+        private void AddTavern(IBoardHelper boardHelper)
         {
             List<Pos> edges = FindTokenPositions(boardHelper, EdgeToken);
-            int edgeIndex = random.Next(0, edges.Count());
+            int edgeIndex = _randomizer.Next(0, edges.Count());
             Pos pos = edges[edgeIndex];
             boardHelper[pos] = TokenHelper.Tavern;
         }
 
-        private static void AddPlayer(IBoardHelper boardHelper, Random random)
+        private void AddPlayer(IBoardHelper boardHelper)
         {
             List<Pos> edges = FindTokenPositions(boardHelper, TokenHelper.OpenPath);
-            int edgeIndex = random.Next(0, edges.Count());
+            int edgeIndex = _randomizer.Next(0, edges.Count());
             Pos pos = edges[edgeIndex];
             boardHelper[pos] = TokenHelper.Player(0);
         }
@@ -68,16 +71,16 @@ namespace Vindinium.Game.Logic
             return positions;
         }
 
-        private static void MakePathBetweenQuadrants(IBoardHelper boardHelper, Random random)
+        private void MakePathBetweenQuadrants(IBoardHelper boardHelper)
         {
             int quarter = boardHelper.Size/2;
-            var pos = new Pos {Y = quarter, X = random.Next(1, quarter + 1)};
+            var pos = new Pos {Y = quarter, X = _randomizer.Next(1, quarter + 1)};
             AdjacentTokens tokenPositions = boardHelper.GetAdjacentTokens(pos);
             OpenPathAndMarkEdges(boardHelper, tokenPositions);
             do
             {
                 List<Pos> edges = FindTokenPositions(boardHelper, EdgeToken);
-                int edgeIndex = random.Next(0, edges.Count());
+                int edgeIndex = _randomizer.Next(0, edges.Count());
                 pos = edges[edgeIndex];
                 tokenPositions = boardHelper.GetAdjacentTokens(pos);
                 OpenPathAndMarkEdges(boardHelper, tokenPositions);

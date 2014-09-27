@@ -9,6 +9,7 @@ namespace Vindinium.Game.Logic
         int Size { get; }
         string this[Pos position] { get; set; }
         string this[int x, int y] { get; }
+        Board UnderlyingBoard { get; }
         void ForEach(Action<Pos> action);
         int TokenCount(string token);
         Pos PositionOf(string token);

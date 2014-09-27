@@ -31,40 +31,24 @@ namespace Vindinium.Game.Logic
 
         public string Play(string gameId, string token, Direction direction)
         {
-            _apiResponse.ErrorMessage = null;
-            _apiResponse.HasError = false;
-            _apiResponse.Text = null;
-
             GameResponse gameResponse = _gameStateProvider.Game;
 
             if (token != gameResponse.Token)
-            {
-                _apiResponse.ErrorMessage = "Unable to find the token in your game";
-                _apiResponse.HasError = true;
-                return _apiResponse.ErrorMessage;
-            }
+                return Error("Unable to find the token in your game");
+
             Common.DataStructures.Game game = gameResponse.Game;
 
             if (gameId != game.Id)
-            {
-                _apiResponse.ErrorMessage = "Unable to find the game";
-                _apiResponse.HasError = true;
-                return _apiResponse.ErrorMessage;
-            }
+                return Error("Unable to find the game");
 
             if (game.Finished)
-            {
-                _apiResponse.ErrorMessage = "Game has finished";
-                _apiResponse.HasError = true;
-                return _apiResponse.ErrorMessage;
-            }
+                return Error("Game has finished");
+
             Hero self = gameResponse.Self;
+
             if (self.Crashed)
-            {
-                _apiResponse.ErrorMessage = "You have crashed and can no longer play";
-                _apiResponse.HasError = true;
-                return _apiResponse.ErrorMessage;
-            }
+                return Error("You have crashed and can no longer play");
+
             Board board = game.Board;
             IBoardHelper boardHelper = new BoardHelper(game.Board);
 
@@ -84,6 +68,9 @@ namespace Vindinium.Game.Logic
             board.MapText = boardHelper.MapText;
             player.GetWealthy();
             gameResponse.Self = player;
+
+            _apiResponse.ErrorMessage = null;
+            _apiResponse.HasError = false;
             _apiResponse.Text = gameResponse.ToJson();
             return _apiResponse.Text;
         }
@@ -96,6 +83,14 @@ namespace Vindinium.Game.Logic
         public string StartArena()
         {
             return Start(EnvironmentType.Arena);
+        }
+
+        private string Error(string message)
+        {
+            _apiResponse.Text = null;
+            _apiResponse.ErrorMessage = message;
+            _apiResponse.HasError = true;
+            return _apiResponse.ErrorMessage;
         }
 
         private void Start(IBoardHelper boardHelper)

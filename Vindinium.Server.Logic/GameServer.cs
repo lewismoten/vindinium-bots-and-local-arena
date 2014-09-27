@@ -35,23 +35,34 @@ namespace Vindinium.Game.Logic
             _apiResponse.HasError = false;
             _apiResponse.Text = null;
 
-            if (token != _gameStateProvider.Game.Token)
+            GameResponse gameResponse = _gameStateProvider.Game;
+
+            if (token != gameResponse.Token)
             {
                 _apiResponse.ErrorMessage = "Unable to find the token in your game";
                 _apiResponse.HasError = true;
                 return _apiResponse.ErrorMessage;
             }
-            if (gameId != _gameStateProvider.Game.Game.Id)
+            Common.DataStructures.Game game = gameResponse.Game;
+
+            if (gameId != game.Id)
             {
                 _apiResponse.ErrorMessage = "Unable to find the game";
                 _apiResponse.HasError = true;
                 return _apiResponse.ErrorMessage;
             }
-            Board board = _gameStateProvider.Game.Game.Board;
-            IBoardHelper boardHelper = new BoardHelper(_gameStateProvider.Game.Game.Board);
 
-            List<Hero> players = _gameStateProvider.Game.Game.Players;
-            Hero player = players.First(p => p.Id == _gameStateProvider.Game.Self.Id);
+            if (game.Finished)
+            {
+                _apiResponse.ErrorMessage = "Game has finished";
+                _apiResponse.HasError = true;
+                return _apiResponse.ErrorMessage;
+            }
+            Board board = game.Board;
+            IBoardHelper boardHelper = new BoardHelper(game.Board);
+
+            List<Hero> players = game.Players;
+            Hero player = players.First(p => p.Id == gameResponse.Self.Id);
             Pos playerPos = player.Pos;
             Pos targetPos = playerPos + GetTargetOffset(direction);
             KeepPositionOnMap(targetPos, board.Size);
@@ -65,8 +76,8 @@ namespace Vindinium.Game.Logic
             players.ForEach(p => p.AssignPosAndMinesFromMap(boardHelper));
             board.MapText = boardHelper.MapText;
             player.GetWealthy();
-            _gameStateProvider.Game.Self = player;
-            _apiResponse.Text = _gameStateProvider.Game.ToJson();
+            gameResponse.Self = player;
+            _apiResponse.Text = gameResponse.ToJson();
             return _apiResponse.Text;
         }
 

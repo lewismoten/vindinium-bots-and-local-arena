@@ -41,6 +41,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GameServerEndGameTests.cs" />
     <Compile Include="GameServerStartArenaTests.cs" />
     <Compile Include="GameServerPlayTests.cs" />
     <Compile Include="GameServerStartTrainingTests.cs" />

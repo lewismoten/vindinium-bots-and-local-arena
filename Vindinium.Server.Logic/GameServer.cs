@@ -58,11 +58,18 @@ namespace Vindinium.Game.Logic
                 _apiResponse.HasError = true;
                 return _apiResponse.ErrorMessage;
             }
+            Hero self = gameResponse.Self;
+            if (self.Crashed)
+            {
+                _apiResponse.ErrorMessage = "You have crashed and can no longer play";
+                _apiResponse.HasError = true;
+                return _apiResponse.ErrorMessage;
+            }
             Board board = game.Board;
             IBoardHelper boardHelper = new BoardHelper(game.Board);
 
             List<Hero> players = game.Players;
-            Hero player = players.First(p => p.Id == gameResponse.Self.Id);
+            Hero player = players.First(p => p.Id == self.Id);
             Pos playerPos = player.Pos;
             Pos targetPos = playerPos + GetTargetOffset(direction);
             KeepPositionOnMap(targetPos, board.Size);

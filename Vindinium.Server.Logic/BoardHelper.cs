@@ -109,11 +109,11 @@ namespace Vindinium.Game.Logic
         {
             return new AdjacentTokens
             {
-                Stay = AddTokenPosition(pos),
-                North = AddTokenPosition(pos + new Pos {Y = -1}),
-                South = AddTokenPosition(pos + new Pos {Y = 1}),
-                East = AddTokenPosition(pos + new Pos {X = 1}),
-                West = AddTokenPosition(pos + new Pos {X = -1})
+                Stay = GetTokenPosition(pos),
+                North = GetTokenPosition(pos + new Pos {Y = -1}),
+                South = GetTokenPosition(pos + new Pos {Y = 1}),
+                East = GetTokenPosition(pos + new Pos {X = 1}),
+                West = GetTokenPosition(pos + new Pos {X = -1})
             };
         }
 
@@ -141,7 +141,7 @@ namespace Vindinium.Game.Logic
             return false;
         }
 
-        private TokenPosition AddTokenPosition(Pos position)
+        private TokenPosition GetTokenPosition(Pos position)
         {
             return IsOnMap(position)
                 ? new TokenPosition {Position = position, Token = this[position]}

@@ -51,16 +51,17 @@ namespace Vindinium.Client.Console
 
             StartGameEnvironment(server, parameters);
 
-            Logger.Debug("View URL: {0}", server.GameResponse.ViewUrl);
+            var gameResponse = server.Response.Text.JsonToObject<GameResponse>();
+            Logger.Debug("View URL: {0}", gameResponse.ViewUrl);
 
-            PlayGame(bot, server, server.GameResponse.Game.Id, server.GameResponse.Token, parameters, apiResponse);
+            PlayGame(bot, server, gameResponse.Game.Id, gameResponse.Token, parameters, apiResponse);
             if (apiResponse.HasError)
             {
                 Logger.Error(apiResponse.ErrorMessage);
             }
             else
             {
-                LogEndGameResults(server.GameResponse);
+                LogEndGameResults(gameResponse);
             }
         }
 
@@ -81,6 +82,7 @@ namespace Vindinium.Client.Console
         private static void PlayGame(RandomBot bot, IGameServerProxy server, string gameId, string token,
             Parameters parameters, IApiResponse response)
         {
+            var gameResponse = server.Response.Text.JsonToObject<GameResponse>();
             do
             {
                 Direction direction = bot.DetermineNextMove();
@@ -92,9 +94,9 @@ namespace Vindinium.Client.Console
                     return;
                 }
 
-                SaveResponseForTesting(server.GameResponse, parameters.Environment == EnvironmentType.Arena, direction);
-            } while (response.HasError == false && server.GameResponse.Game.Finished == false &&
-                     server.GameResponse.Self.Crashed == false);
+                SaveResponseForTesting(gameResponse, parameters.Environment == EnvironmentType.Arena, direction);
+            } while (response.HasError == false && gameResponse.Game.Finished == false &&
+                     gameResponse.Self.Crashed == false);
         }
 
         private static void LogEndGameResults(GameResponse gameResponse)

@@ -27,7 +27,7 @@ namespace Vindinium.Game.Logic.Tests
                 Game = new Common.DataStructures.Game()
             };
 
-            IApiResponse apiResponse = _server.Play(_mockGameStateProvider.Game.Game.Id,
+            _server.Play(_mockGameStateProvider.Game.Game.Id,
                 _mockGameStateProvider.Game.Token,
                 Direction.Stay);
 
@@ -50,7 +50,7 @@ namespace Vindinium.Game.Logic.Tests
                 }
             };
 
-            IApiResponse response = _server.Play(_mockGameStateProvider.Game.Game.Id, _mockGameStateProvider.Game.Token,
+            _server.Play(_mockGameStateProvider.Game.Game.Id, _mockGameStateProvider.Game.Token,
                 Direction.Stay);
 
             Assert.That(_apiResponse.Text, Is.Null);

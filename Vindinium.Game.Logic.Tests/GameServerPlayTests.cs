@@ -26,8 +26,7 @@ namespace Vindinium.Game.Logic.Tests
 
         private GameResponse Play(string gameId, string token, Direction direction)
         {
-            IApiResponse response = _server.Play(gameId, token, direction);
-            Assert.That(response, Is.SameAs(_apiResponse));
+            _server.Play(gameId, token, direction);
             Assert.That(_apiResponse.HasError, Is.False, _apiResponse.ErrorMessage);
             Assert.That(_apiResponse.ErrorMessage, Is.Null);
             Assert.That(_apiResponse.Text, Is.Not.Null);
@@ -44,7 +43,8 @@ namespace Vindinium.Game.Logic.Tests
 
         private void AssertPlayHasMapText(string gameId, string token, Direction direction, string mapText)
         {
-            var response = _server.Play(gameId, token, direction).Text.JsonToObject<GameResponse>();
+            _server.Play(gameId, token, direction);
+            var response = _apiResponse.Text.JsonToObject<GameResponse>();
             Assert.That(response.Game.Board.MapText, Is.EqualTo(mapText));
         }
 
@@ -53,14 +53,16 @@ namespace Vindinium.Game.Logic.Tests
 
         {
             _mockMapMaker.MapText = mapText;
-            return _server.StartArena().Text.JsonToObject<GameResponse>();
+            _server.StartArena();
+            return _apiResponse.Text.JsonToObject<GameResponse>();
         }
 
         [Test]
         public void KillEnemy()
         {
             _mockMapMaker.MapText = "@2$2@1$2";
-            string text = _server.StartArena().Text;
+            _server.StartArena();
+            string text = _apiResponse.Text;
             var response = text.JsonToObject<GameResponse>();
 
             for (int i = 0; i < 5; i++)

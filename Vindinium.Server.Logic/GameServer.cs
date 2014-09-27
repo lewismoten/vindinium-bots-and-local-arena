@@ -13,41 +13,50 @@ namespace Vindinium.Game.Logic
         private const int FullLife = 100;
         private const int HealingCost = 2;
         private const int AttackDamage = 20;
-        private readonly IApiResponse _apiResponse;
         private readonly IGameStateProvider _gameStateProvider;
         private readonly IMapMaker _mapMaker;
 
         public GameServer(IMapMaker mapMaker, IApiResponse apiResponse, IGameStateProvider gameStateProvider)
         {
             _mapMaker = mapMaker;
-            _apiResponse = apiResponse;
+            Response = apiResponse;
             _gameStateProvider = gameStateProvider;
         }
 
-        public GameResponse GameResponse
-        {
-            get { return null; }
-        }
+        public IApiResponse Response { get; private set; }
 
-        public IApiResponse Play(string gameId, string token, Direction direction)
+        public void Play(string gameId, string token, Direction direction)
         {
             GameResponse gameResponse = _gameStateProvider.Game;
 
             if (token != gameResponse.Token)
-                return Error("Unable to find the token in your game");
+            {
+                SetError("Unable to find the token in your game");
+                return;
+            }
 
             Common.DataStructures.Game game = gameResponse.Game;
 
             if (gameId != game.Id)
-                return Error("Unable to find the game");
+            {
+                SetError("Unable to find the game");
+                return;
+            }
 
             if (game.Finished)
-                return Error("Game has finished");
+            {
+                SetError("Game has finished");
+                return;
+            }
+
 
             Hero self = gameResponse.Self;
 
             if (self.Crashed)
-                return Error("You have crashed and can no longer play");
+            {
+                SetError("You have crashed and can no longer play");
+                return;
+            }
 
             Board board = game.Board;
             IBoardHelper boardHelper = new BoardHelper(game.Board);
@@ -69,28 +78,26 @@ namespace Vindinium.Game.Logic
             player.GetWealthy();
             gameResponse.Self = player;
 
-            _apiResponse.ErrorMessage = null;
-            _apiResponse.HasError = false;
-            _apiResponse.Text = gameResponse.ToJson();
-            return _apiResponse;
+            Response.ErrorMessage = null;
+            Response.HasError = false;
+            Response.Text = gameResponse.ToJson();
         }
 
-        public IApiResponse StartTraining(uint turns)
+        public void StartTraining(uint turns)
         {
-            return Start(EnvironmentType.Training);
+            Start(EnvironmentType.Training);
         }
 
-        public IApiResponse StartArena()
+        public void StartArena()
         {
-            return Start(EnvironmentType.Arena);
+            Start(EnvironmentType.Arena);
         }
 
-        private IApiResponse Error(string message)
+        private void SetError(string message)
         {
-            _apiResponse.Text = null;
-            _apiResponse.ErrorMessage = message;
-            _apiResponse.HasError = true;
-            return _apiResponse;
+            Response.Text = null;
+            Response.ErrorMessage = message;
+            Response.HasError = true;
         }
 
         private void Start(IBoardHelper boardHelper)
@@ -262,7 +269,7 @@ namespace Vindinium.Game.Logic
         }
 
 
-        private IApiResponse Start(EnvironmentType environmentType)
+        private void Start(EnvironmentType environmentType)
         {
             Start();
             if (environmentType == EnvironmentType.Training)
@@ -271,10 +278,9 @@ namespace Vindinium.Game.Logic
                     .ToList()
                     .ForEach(p => p.Elo = null);
             }
-            _apiResponse.HasError = false;
-            _apiResponse.ErrorMessage = null;
-            _apiResponse.Text = _gameStateProvider.Game.ToJson();
-            return _apiResponse;
+            Response.HasError = false;
+            Response.ErrorMessage = null;
+            Response.Text = _gameStateProvider.Game.ToJson();
         }
     }
 }

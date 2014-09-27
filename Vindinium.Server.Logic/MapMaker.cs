@@ -91,21 +91,17 @@ namespace Vindinium.Game.Logic
         {
             boardHelper[tokenPositions.Stay.Position] = TokenHelper.OpenPath;
 
-            if (tokenPositions.North.Token == TokenHelper.Obstruction)
+            MarkObstructionAsEdge(boardHelper, tokenPositions.North);
+            MarkObstructionAsEdge(boardHelper, tokenPositions.East);
+            MarkObstructionAsEdge(boardHelper, tokenPositions.West);
+            MarkObstructionAsEdge(boardHelper, tokenPositions.South);
+        }
+
+        private static void MarkObstructionAsEdge(IBoardHelper boardHelper, TokenPosition tokenPosition)
+        {
+            if (tokenPosition.Token == TokenHelper.Obstruction)
             {
-                boardHelper[tokenPositions.North.Position] = EdgeToken;
-            }
-            if (tokenPositions.East.Token == TokenHelper.Obstruction)
-            {
-                boardHelper[tokenPositions.East.Position] = EdgeToken;
-            }
-            if (tokenPositions.West.Token == TokenHelper.Obstruction)
-            {
-                boardHelper[tokenPositions.West.Position] = EdgeToken;
-            }
-            if (tokenPositions.South.Token == TokenHelper.Obstruction)
-            {
-                boardHelper[tokenPositions.South.Position] = EdgeToken;
+                boardHelper[tokenPosition.Position] = EdgeToken;
             }
         }
     }

@@ -16,7 +16,7 @@ namespace Vindinium.Game.Logic.Tests
         {
             _mockMapMaker = new MockMapMaker();
             _mockGameStateProvider = new MockGameStateProvider();
-            _server = new GameServer(_mockMapMaker, _apiResponse, _mockGameStateProvider);
+            _server = new GameServer(_mockMapMaker, _apiResponse, _mockGameStateProvider, new BoardHelper());
         }
 
         private IGameServerProxy _server;
@@ -62,9 +62,9 @@ namespace Vindinium.Game.Logic.Tests
         {
             _mockMapMaker.MapText = "@2$2@1$2";
             _server.StartArena();
+
             string text = _apiResponse.Text;
             var response = text.JsonToObject<GameResponse>();
-
             for (int i = 0; i < 5; i++)
                 response = Play(response.Game.Id, response.Token, Direction.North);
 
@@ -272,6 +272,15 @@ namespace Vindinium.Game.Logic.Tests
             response = Play(response.Game.Id, response.Token, Direction.North);
             Assert.That(response.Self.Life, Is.EqualTo(99));
             Assert.That(response.Game.Players.First(p => p.Id == response.Self.Id).Life, Is.EqualTo(99));
+        }
+
+        [Test]
+        public void TurnIncrementsByFour()
+        {
+            GameResponse response = Start("  ##@1##");
+            int turn = response.Game.Turn;
+            response = Play(response.Game.Id, response.Token, Direction.North);
+            Assert.That(response.Game.Turn, Is.EqualTo(turn + 4));
         }
     }
 }

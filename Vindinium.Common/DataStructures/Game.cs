@@ -24,7 +24,7 @@ namespace Vindinium.Common.DataStructures
         public string Id { get; set; }
 
         [DataMember(Name = "maxTurns")]
-        public int MaxTurns { get; set; }
+        public uint MaxTurns { get; set; }
 
         [DataMember(Name = "turn")]
         public int Turn { get; set; }

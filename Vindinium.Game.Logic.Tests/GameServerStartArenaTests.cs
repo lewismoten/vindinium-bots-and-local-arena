@@ -14,7 +14,8 @@ namespace Vindinium.Game.Logic.Tests
         {
             var mockMapMaker = new MockMapMaker {MapText = "@1@2@3@4"};
             var mockResponse = new MockApiResponse();
-            IGameServerProxy server = new GameServer(mockMapMaker, mockResponse, new MockGameStateProvider());
+            IGameServerProxy server = new GameServer(mockMapMaker, mockResponse, new MockGameStateProvider(),
+                new BoardHelper());
             server.StartArena();
             _gameResponse = mockResponse.Text.JsonToObject<GameResponse>();
             _game = _gameResponse.Game;
@@ -27,6 +28,13 @@ namespace Vindinium.Game.Logic.Tests
         public void AllPlayersHaveEloScore()
         {
             Assert.That(_game.Players, Has.All.Property("Elo").InRange(0, 3000));
+        }
+
+
+        [Test]
+        public void MaxTurnsAre1200()
+        {
+            Assert.That(_game.MaxTurns, Is.EqualTo(1200));
         }
     }
 }

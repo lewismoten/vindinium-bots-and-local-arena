@@ -7,28 +7,17 @@ namespace Vindinium.Game.Logic
 {
     public class BoardHelper : IBoardHelper
     {
-        private readonly Board _board;
-
-        public BoardHelper(Board board)
+        public Board GetBoard()
         {
-            _board = board;
+            return new Board {MapText = MapText, Size = Size};
         }
 
         public int Size
         {
-            get { return _board.Size; }
+            get { return (byte) Math.Sqrt(MapText.Length/2d); }
         }
 
-        public string MapText
-        {
-            set
-            {
-                _board.Size = (byte) Math.Sqrt(value.Length/2d);
-                _board.MapText = value;
-            }
-
-            get { return _board.MapText; }
-        }
+        public string MapText { get; set; }
 
         public string this[int x, int y]
         {
@@ -38,7 +27,7 @@ namespace Vindinium.Game.Logic
                 {
                     return null;
                 }
-                return _board.MapText.Substring(StringIndex(x, y), 2);
+                return MapText.Substring(StringIndex(x, y), 2);
             }
             set
             {
@@ -115,11 +104,6 @@ namespace Vindinium.Game.Logic
                 East = GetTokenPosition(pos + new Pos {X = 1}),
                 West = GetTokenPosition(pos + new Pos {X = -1})
             };
-        }
-
-        public Board UnderlyingBoard
-        {
-            get { return _board; }
         }
 
         private int StringIndex(int x, int y)

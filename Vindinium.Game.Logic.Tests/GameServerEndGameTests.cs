@@ -20,7 +20,7 @@ namespace Vindinium.Game.Logic.Tests
         {
             _mockMapMaker = new MockMapMaker();
             _mockGameStateProvider = new MockGameStateProvider();
-            _server = new GameServer(_mockMapMaker, _apiResponse, _mockGameStateProvider);
+            _server = new GameServer(_mockMapMaker, _apiResponse, _mockGameStateProvider, new BoardHelper());
             _mockGameStateProvider.Game = new GameResponse
             {
                 Self = new Hero {Crashed = true},
@@ -41,7 +41,7 @@ namespace Vindinium.Game.Logic.Tests
         {
             _mockMapMaker = new MockMapMaker();
             _mockGameStateProvider = new MockGameStateProvider();
-            _server = new GameServer(_mockMapMaker, _apiResponse, _mockGameStateProvider);
+            _server = new GameServer(_mockMapMaker, _apiResponse, _mockGameStateProvider, new BoardHelper());
             _mockGameStateProvider.Game = new GameResponse
             {
                 Game = new Common.DataStructures.Game
@@ -56,6 +56,22 @@ namespace Vindinium.Game.Logic.Tests
             Assert.That(_apiResponse.Text, Is.Null);
             Assert.That(_apiResponse.HasError, Is.True);
             Assert.That(_apiResponse.ErrorMessage, Is.EqualTo("Game has finished"));
+        }
+
+        [Test]
+        public void PlayLastTurnReturnsFinished()
+        {
+            _mockGameStateProvider = new MockGameStateProvider();
+            _server = new GameServer(new MapMaker(new Randomizer()), _apiResponse, _mockGameStateProvider,
+                new BoardHelper());
+            _server.StartTraining(1);
+            _mockGameStateProvider.Game.Game.Turn = 4;
+
+            _server.Play(_mockGameStateProvider.Game.Game.Id, _mockGameStateProvider.Game.Token,
+                Direction.Stay);
+
+            var response = _apiResponse.Text.JsonToObject<GameResponse>();
+            Assert.That(response.Game.Finished, Is.True);
         }
     }
 }

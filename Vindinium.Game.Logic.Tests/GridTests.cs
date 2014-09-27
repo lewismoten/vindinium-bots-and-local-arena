@@ -11,7 +11,7 @@ namespace Vindinium.Game.Logic.Tests
         {
             const string text = "  ##" +
                                 "@1[]";
-            var map = new BoardHelper(new Board()) {MapText = text};
+            var map = new BoardHelper {MapText = text};
             Assert.That(map.MapText, Is.EqualTo(text));
             Assert.That(map[1, 1], Is.EqualTo(text.Substring(0, 2)));
             Assert.That(map[2, 1], Is.EqualTo(text.Substring(2, 2)));

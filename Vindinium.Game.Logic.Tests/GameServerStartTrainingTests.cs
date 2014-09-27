@@ -15,7 +15,8 @@ namespace Vindinium.Game.Logic.Tests
         {
             var mockMapMaker = new MockMapMaker {MapText = "@1@2@3@4"};
             var mockApiResponse = new MockApiResponse();
-            IGameServerProxy server = new GameServer(mockMapMaker, mockApiResponse, new MockGameStateProvider());
+            IGameServerProxy server = new GameServer(mockMapMaker, mockApiResponse, new MockGameStateProvider(),
+                new BoardHelper());
             server.StartTraining(300);
             _gameResponse = mockApiResponse.Text.JsonToObject<GameResponse>();
             _game = _gameResponse.Game;
@@ -23,6 +24,19 @@ namespace Vindinium.Game.Logic.Tests
 
         private GameResponse _gameResponse;
         private Common.DataStructures.Game _game;
+
+        [Test]
+        public void MaxTurnsEqualRoundsTimesFour()
+        {
+            const uint rounds = 23;
+            var mockMapMaker = new MockMapMaker {MapText = "@1@2@3@4"};
+            var mockApiResponse = new MockApiResponse();
+            IGameServerProxy server = new GameServer(mockMapMaker, mockApiResponse, new MockGameStateProvider(),
+                new BoardHelper());
+            server.StartTraining(rounds);
+            _gameResponse = mockApiResponse.Text.JsonToObject<GameResponse>();
+            Assert.That(_gameResponse.Game.MaxTurns, Is.EqualTo(rounds*4));
+        }
 
         [Test]
         public void OnlySelfHasEloScoreInTraining()

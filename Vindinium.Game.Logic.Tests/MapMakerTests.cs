@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using Vindinium.Common.DataStructures;
 using Vindinium.Game.Logic.Tests.Mocks;
 
 namespace Vindinium.Game.Logic.Tests
@@ -10,14 +9,14 @@ namespace Vindinium.Game.Logic.Tests
     [TestFixture]
     public class MapMakerTests
     {
-        private const int SeedCount = 1;
+        private const int SeedCount = 3;
         private const int MaxSeed = int.MaxValue;
         private const int MinSeed = int.MinValue;
         private readonly string[] _openTokens = {"  ", "@1", "@2", "@3", "@4"};
         private IRandomizer _randomizer;
         private IBoardHelper _boardHelper;
         private IMapMaker _mapMaker;
-        private Board _board;
+
 
         private Dictionary<string, int> UniqueTokenCounts()
         {
@@ -65,8 +64,7 @@ namespace Vindinium.Game.Logic.Tests
         private void GenerateMap(int seed)
         {
             _randomizer = new MockRandomizer(seed);
-            _board = new Board();
-            _boardHelper = new BoardHelper(_board);
+            _boardHelper = new BoardHelper();
             _mapMaker = new MapMaker(_randomizer);
             _mapMaker.GenerateMap(_boardHelper);
         }
@@ -145,7 +143,7 @@ namespace Vindinium.Game.Logic.Tests
         {
             GenerateMap(seed);
 
-            string map = _board.MapText.Replace("$-", "$$")
+            string map = _boardHelper.MapText.Replace("$-", "$$")
                 .Replace("[]", "[[")
                 .Replace("@1", "@@")
                 .Replace("@2", "@@")
@@ -160,7 +158,7 @@ namespace Vindinium.Game.Logic.Tests
         {
             GenerateMap(seed);
 
-            string map = _board.MapText.Replace("$-", "$$")
+            string map = _boardHelper.MapText.Replace("$-", "$$")
                 .Replace("[]", "[[")
                 .Replace("@1", "@@")
                 .Replace("@2", "@@")
@@ -183,7 +181,7 @@ namespace Vindinium.Game.Logic.Tests
         {
             GenerateMap(seed);
 
-            int cells = _board.MapText.Length/2;
+            int cells = _boardHelper.MapText.Length/2;
             double size = Math.Sqrt(cells);
             Assert.That(size,
                 Is.EqualTo(Math.Floor(size))
@@ -216,7 +214,7 @@ namespace Vindinium.Game.Logic.Tests
         {
             GenerateMap(seed);
 
-            string tokens = _board.MapText;
+            string tokens = _boardHelper.MapText;
             var size = (int) Math.Sqrt(tokens.Length/2.0);
 
             // first line of tokens in bottom left quadrant

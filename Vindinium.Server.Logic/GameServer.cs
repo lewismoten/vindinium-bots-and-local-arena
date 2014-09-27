@@ -13,14 +13,17 @@ namespace Vindinium.Game.Logic
         private const int FullLife = 100;
         private const int HealingCost = 2;
         private const int AttackDamage = 20;
+        private readonly IBoardHelper _boardHelper;
         private readonly IGameStateProvider _gameStateProvider;
         private readonly IMapMaker _mapMaker;
 
-        public GameServer(IMapMaker mapMaker, IApiResponse apiResponse, IGameStateProvider gameStateProvider)
+        public GameServer(IMapMaker mapMaker, IApiResponse apiResponse, IGameStateProvider gameStateProvider,
+            IBoardHelper boardHelper)
         {
             _mapMaker = mapMaker;
             Response = apiResponse;
             _gameStateProvider = gameStateProvider;
+            _boardHelper = boardHelper;
         }
 
         public IApiResponse Response { get; private set; }
@@ -58,39 +61,47 @@ namespace Vindinium.Game.Logic
                 return;
             }
 
-            Board board = game.Board;
-            IBoardHelper boardHelper = new BoardHelper(game.Board);
+            _boardHelper.MapText = game.Board.MapText;
 
             List<Hero> players = game.Players;
             Hero player = players.First(p => p.Id == self.Id);
             Pos playerPos = player.Pos;
             Pos targetPos = playerPos + GetTargetOffset(direction);
-            KeepPositionOnMap(targetPos, board.Size);
-            string targetToken = boardHelper[targetPos];
+            KeepPositionOnMap(targetPos, _boardHelper.Size);
+            string targetToken = _boardHelper[targetPos];
 
-            PlayerMoving(playerPos, boardHelper, targetToken, targetPos, player);
-            PlayerMoved(direction, targetToken, player, boardHelper);
-            MoveDeadPlayers(boardHelper, players);
+            if (direction != Direction.Stay)
+            {
+                PlayerMoving(playerPos, _boardHelper, targetToken, targetPos, player);
+                PlayerMoved(direction, targetToken, player, _boardHelper);
+            }
+
+            MoveDeadPlayers(_boardHelper, players);
             player.GetThirsty();
             players.RaiseTheDead();
-            players.ForEach(p => p.AssignPosAndMinesFromMap(boardHelper));
-            board.MapText = boardHelper.MapText;
+            players.ForEach(p => p.AssignPosAndMinesFromMap(_boardHelper));
+            game.Board.MapText = _boardHelper.MapText;
             player.GetWealthy();
             gameResponse.Self = player;
 
+            game.Turn += 4;
+            if (game.Turn >= game.MaxTurns)
+            {
+                game.Finished = true;
+            }
             Response.ErrorMessage = null;
             Response.HasError = false;
             Response.Text = gameResponse.ToJson();
         }
 
-        public void StartTraining(uint turns)
+        public void StartTraining(uint rounds)
         {
-            Start(EnvironmentType.Training);
+            Start(EnvironmentType.Training, rounds);
         }
 
         public void StartArena()
         {
-            Start(EnvironmentType.Arena);
+            Start(EnvironmentType.Arena, 300);
         }
 
         private void SetError(string message)
@@ -100,7 +111,7 @@ namespace Vindinium.Game.Logic
             Response.HasError = true;
         }
 
-        private void Start(IBoardHelper boardHelper)
+        private void CreateGame()
         {
             string gameId = Guid.NewGuid().ToString("N").Substring(0, 8);
             string token = Guid.NewGuid().ToString("N").Substring(0, 8);
@@ -109,7 +120,11 @@ namespace Vindinium.Game.Logic
             {
                 Game = new Common.DataStructures.Game
                 {
-                    Board = boardHelper.UnderlyingBoard,
+                    Board = new Board
+                    {
+                        MapText = _boardHelper.MapText,
+                        Size = _boardHelper.Size
+                    },
                     Finished = false,
                     Id = gameId,
                     MaxTurns = 20,
@@ -117,13 +132,13 @@ namespace Vindinium.Game.Logic
                     Turn = 0
                 },
                 PlayUrl = string.Format("http://vindinium.org/api/{0}/{1}/play", gameId, token),
-                Self = CreateHero(boardHelper, 1),
+                Self = CreateHero(1),
                 Token = token,
                 ViewUrl = string.Format("http://vindinium.org/{0}", gameId)
             };
             for (int i = 1; i <= 4; i++)
             {
-                _gameStateProvider.Game.Game.Players.Add(CreateHero(boardHelper, i));
+                _gameStateProvider.Game.Game.Players.Add(CreateHero(i));
             }
         }
 
@@ -165,13 +180,11 @@ namespace Vindinium.Game.Logic
 
         private void Start()
         {
-            var board = new Board();
-            var boardHelper = new BoardHelper(board);
-            _mapMaker.GenerateMap(boardHelper);
-            Start(boardHelper);
+            _mapMaker.GenerateMap(_boardHelper);
+            CreateGame();
         }
 
-        private Hero CreateHero(IBoardHelper boardHelper, int playerId)
+        private Hero CreateHero(int playerId)
         {
             var hero = new Hero
             {
@@ -183,7 +196,7 @@ namespace Vindinium.Game.Logic
                 Gold = 0,
                 Crashed = false
             };
-            hero.AssignPosAndMinesFromMap(boardHelper);
+            hero.AssignPosAndMinesFromMap(_boardHelper);
             hero.SpawnPos = hero.Pos;
             return hero;
         }
@@ -269,7 +282,7 @@ namespace Vindinium.Game.Logic
         }
 
 
-        private void Start(EnvironmentType environmentType)
+        private void Start(EnvironmentType environmentType, uint rounds)
         {
             Start();
             if (environmentType == EnvironmentType.Training)
@@ -278,6 +291,9 @@ namespace Vindinium.Game.Logic
                     .ToList()
                     .ForEach(p => p.Elo = null);
             }
+
+            _gameStateProvider.Game.Game.MaxTurns = rounds*4;
+
             Response.HasError = false;
             Response.ErrorMessage = null;
             Response.Text = _gameStateProvider.Game.ToJson();

@@ -18,9 +18,9 @@ namespace Vindinium.Client.Logic
 
         public IApiResponse Response { get; private set; }
 
-        public void StartTraining(uint turns)
+        public void StartTraining(uint rounds)
         {
-            CallApi(_endpointBuilder.StartTraining(turns), Response);
+            CallApi(_endpointBuilder.StartTraining(rounds), Response);
         }
 
         public void StartArena()

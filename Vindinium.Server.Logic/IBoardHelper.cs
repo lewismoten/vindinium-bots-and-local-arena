@@ -17,5 +17,6 @@ namespace Vindinium.Game.Logic
         void MakeSymmetric();
         AdjacentTokens GetAdjacentTokens(Pos pos);
         void ReplaceTokens(string oldToken, string newToken);
+        void RespawnDeadPlayers(List<Hero> players);
     }
 }

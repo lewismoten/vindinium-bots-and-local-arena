@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Vindinium.Common;
 using Vindinium.Common.DataStructures;
@@ -107,6 +108,38 @@ namespace Vindinium.Game.Logic
             };
         }
 
+        public void ReplaceTokens(string oldToken, string newToken)
+        {
+            MapText = MapText.Replace(oldToken, newToken);
+        }
+
+
+        public void RespawnDeadPlayers(List<Hero> players)
+        {
+            Hero[] misplacedDead =
+                players.Where(p => p.IsDead() && p.Pos != p.SpawnPos && p.Crashed == false)
+                    .ToArray();
+            do
+            {
+                foreach (Hero deadPlayer in misplacedDead)
+                {
+                    ReplaceTokens(deadPlayer.MineToken(), TokenHelper.NeutralMine);
+
+                    players.Where(p => p.Pos == deadPlayer.SpawnPos)
+                        .ToList()
+                        .ForEach(p => p.Die());
+                    this[deadPlayer.Pos] = TokenHelper.OpenPath;
+                    deadPlayer.Pos = deadPlayer.SpawnPos;
+                }
+                misplacedDead =
+                    players.Where(p => p.IsDead() && p.Pos != p.SpawnPos).ToArray();
+            } while (misplacedDead.Any());
+
+            players.Where(p => p.Crashed == false)
+                .ToList()
+                .ForEach(p => this[p.Pos] = p.PlayerToken());
+        }
+
         private int StringIndex(int x, int y)
         {
             y = y - 1;
@@ -149,11 +182,6 @@ namespace Vindinium.Game.Logic
         public override string ToString()
         {
             return MapFormatter.FormatTokensAsMap(MapText);
-        }
-
-        public void ReplaceTokens(string oldToken, string newToken)
-        {
-            MapText = MapText.Replace(oldToken, newToken);
         }
     }
 }

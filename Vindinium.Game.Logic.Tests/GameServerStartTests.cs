@@ -17,7 +17,7 @@ namespace Vindinium.Game.Logic.Tests
         public void RunBeforeFirstTest()
         {
             var mapMaker = Substitute.For<IMapMaker>();
-            var boardHelper = Substitute.For<IBoardHelper>();
+            var boardHelper = Substitute.For<BoardHelper>();
             boardHelper.MapText = "@1@2@3@4";
             _apiResponse = Substitute.For<IApiResponse>();
             _server = new GameServer(mapMaker, _apiResponse, new MockGameStateProvider(), boardHelper);

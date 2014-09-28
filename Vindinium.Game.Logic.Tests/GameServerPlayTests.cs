@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using NSubstitute;
-using NSubstitute.Exceptions;
 using NUnit.Framework;
 using Vindinium.Common;
 using Vindinium.Common.DataStructures;
@@ -19,7 +18,7 @@ namespace Vindinium.Game.Logic.Tests
         {
             _mapMaker = Substitute.For<IMapMaker>();
             _mockGameStateProvider = new MockGameStateProvider();
-            _boardHelper = Substitute.For<IBoardHelper>();
+            _boardHelper = Substitute.For<BoardHelper>();
             _server = new GameServer(_mapMaker, _apiResponse, _mockGameStateProvider, _boardHelper);
         }
 
@@ -70,26 +69,35 @@ namespace Vindinium.Game.Logic.Tests
             var boardHelper = Substitute.For<IBoardHelper>();
             boardHelper.Size.Returns(2);
             boardHelper[Arg.Any<Pos>()].Returns("@2");
-            boardHelper.When(b=>b.ReplaceTokens("$2", "$1")).Do(c=> boardHelper.MapText = boardHelper.MapText.Replace("$2", "$1"));
-            boardHelper.PositionOf("@1").Returns(new Pos { X = 1, Y = 2 });
+            boardHelper.When(b => b.ReplaceTokens("$2", "$1"))
+                .Do(c => boardHelper.MapText = boardHelper.MapText.Replace("$2", "$1"));
+            boardHelper.PositionOf("@1").Returns(new Pos {X = 1, Y = 2});
             boardHelper.TokenCount("$1").Returns(2);
 
             var server = new GameServer(mapMaker, apiResponse, gameStateProvider, boardHelper);
-            gameStateProvider.Game = new GameResponse()
+            gameStateProvider.Game = new GameResponse
             {
-                Game = new Common.DataStructures.Game()
+                Game = new Common.DataStructures.Game
                 {
-                    Board = new Board()
+                    Board = new Board
                     {
                         MapText = "@2$2@1$2"
                     },
-                    Players = new List<Hero>()
+                    Players = new List<Hero>
                     {
-                        new Hero(){Id = 1, Pos = new Pos(){X = 1, Y=2}},
-                        new Hero(){Id = 2, Pos = new Pos(){X = 1, Y=1}, Life = 1, MineCount = 2, Gold = 53, SpawnPos = new Pos(){X=1, Y=1}}
+                        new Hero {Id = 1, Pos = new Pos {X = 1, Y = 2}},
+                        new Hero
+                        {
+                            Id = 2,
+                            Pos = new Pos {X = 1, Y = 1},
+                            Life = 1,
+                            MineCount = 2,
+                            Gold = 53,
+                            SpawnPos = new Pos {X = 1, Y = 1}
+                        }
                     }
                 },
-                Self = new Hero() { Id = 1, Pos = new Pos() { X = 1, Y = 2 } }
+                Self = new Hero {Id = 1}
             };
 
             server.Play(null, null, Direction.North);
@@ -119,15 +127,33 @@ namespace Vindinium.Game.Logic.Tests
         [Test]
         public void SpawnOnDeath()
         {
-            GameResponse response = Start("$-    @1");
-            for (int i = 0; i < 80; i++)
-                Play(response.Game.Id, response.Token, Direction.Stay);
-            response = Play(response.Game.Id, response.Token, Direction.West);
-            Assert.That(response.Self.Life, Is.EqualTo(19));
-            response = Play(response.Game.Id, response.Token, Direction.North);
+            var mapMaker = Substitute.For<IMapMaker>();
+            var apiResponse = Substitute.For<IApiResponse>();
+            var gameStateProvider = Substitute.For<IGameStateProvider>();
+            var boardHelper = Substitute.For<BoardHelper>();
 
-            Assert.That(response.Self.Life, Is.EqualTo(100));
-            Assert.That(response.Game.Board.MapText, Is.EqualTo("$-    @1"));
+            var server = new GameServer(mapMaker, apiResponse, gameStateProvider, boardHelper);
+            gameStateProvider.Game = new GameResponse
+            {
+                Game = new Common.DataStructures.Game
+                {
+                    Board = new Board
+                    {
+                        MapText = "$-  @1  "
+                    },
+                    Players = new List<Hero>
+                    {
+                        new Hero {Id = 1, Pos = new Pos {X = 1, Y = 2}, SpawnPos = new Pos {X = 2, Y = 2}, Life = 1}
+                    }
+                },
+                Self = new Hero {Id = 1}
+            };
+
+            server.Play(null, null, Direction.North);
+
+            Assert.That(gameStateProvider.Game.Self.Life, Is.EqualTo(100));
+            Assert.That(gameStateProvider.Game.Game.Board.MapText, Is.EqualTo("$-    @1"));
+            Assert.That(gameStateProvider.Game.Self.Pos, Is.EqualTo(gameStateProvider.Game.Self.SpawnPos));
         }
 
         [Test]

@@ -76,7 +76,7 @@ namespace Vindinium.Game.Logic
                 PlayerMoved(direction, targetToken, player, _boardHelper);
             }
 
-            MoveDeadPlayers(_boardHelper, players);
+            _boardHelper.RespawnDeadPlayers(players);
             player.GetThirsty();
             players.RaiseTheDead();
             players.ForEach(p => p.AssignPosAndMinesFromMap(_boardHelper));
@@ -140,42 +140,6 @@ namespace Vindinium.Game.Logic
             {
                 _gameStateProvider.Game.Game.Players.Add(CreateHero(i));
             }
-        }
-
-        private void MoveDeadPlayers(IBoardHelper map, List<Hero> players)
-        {
-            Hero[] misplacedDead =
-                players.Where(p => p.IsDead() && p.Pos != p.SpawnPos && p.Crashed == false)
-                    .ToArray();
-            do
-            {
-                foreach (Hero deadPlayer in misplacedDead)
-                {
-                    ReplaceMapToken(map, deadPlayer.MineToken(), TokenHelper.NeutralMine);
-                    players.Where(p => p.Pos == deadPlayer.SpawnPos)
-                        .ToList()
-                        .ForEach(p => p.Die());
-                    map[deadPlayer.Pos] = TokenHelper.OpenPath;
-                    deadPlayer.Pos = deadPlayer.SpawnPos;
-                }
-                misplacedDead =
-                    players.Where(p => p.IsDead() && p.Pos != p.SpawnPos).ToArray();
-            } while (misplacedDead.Any());
-
-            players.Where(p => p.Crashed == false)
-                .ToList()
-                .ForEach(p => map[p.Pos] = p.PlayerToken());
-        }
-
-        private static void ReplaceMapToken(IBoardHelper map, string oldToken, string newToken)
-        {
-            map.ForEach(p =>
-            {
-                if (map[p] == oldToken)
-                {
-                    map[p] = newToken;
-                }
-            });
         }
 
         private void Start()

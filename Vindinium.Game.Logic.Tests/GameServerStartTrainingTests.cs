@@ -1,7 +1,9 @@
 using System.Linq;
+using NSubstitute;
 using NUnit.Framework;
 using Vindinium.Common;
 using Vindinium.Common.DataStructures;
+using Vindinium.Common.Entities;
 using Vindinium.Common.Services;
 using Vindinium.Game.Logic.Tests.Mocks;
 
@@ -13,12 +15,14 @@ namespace Vindinium.Game.Logic.Tests
         [TestFixtureSetUp]
         public void RunBeforeFirstTest()
         {
-            var mockMapMaker = new MockMapMaker {MapText = "@1@2@3@4"};
-            var mockApiResponse = new MockApiResponse();
-            IGameServerProxy server = new GameServer(mockMapMaker, mockApiResponse, new MockGameStateProvider(),
-                new BoardHelper());
+            var mapMaker = Substitute.For<IMapMaker>();
+            var boardHelper = Substitute.For<IBoardHelper>();
+            boardHelper.MapText = "@1@2@3@4";
+            var apiResponse = Substitute.For<IApiResponse>();
+            IGameServerProxy server = new GameServer(mapMaker, apiResponse, new MockGameStateProvider(),
+                boardHelper);
             server.StartTraining(300);
-            _gameResponse = mockApiResponse.Text.JsonToObject<GameResponse>();
+            _gameResponse = apiResponse.Text.JsonToObject<GameResponse>();
             _game = _gameResponse.Game;
         }
 
@@ -29,12 +33,13 @@ namespace Vindinium.Game.Logic.Tests
         public void MaxTurnsEqualRoundsTimesFour()
         {
             const uint rounds = 23;
-            var mockMapMaker = new MockMapMaker {MapText = "@1@2@3@4"};
-            var mockApiResponse = new MockApiResponse();
-            IGameServerProxy server = new GameServer(mockMapMaker, mockApiResponse, new MockGameStateProvider(),
-                new BoardHelper());
+            var mapMaker = Substitute.For<IMapMaker>();
+            var boardHelper = Substitute.For<IBoardHelper>();
+            boardHelper.MapText = "@1@2@3@4";
+            var apiResponse = Substitute.For<IApiResponse>();
+            IGameServerProxy server = new GameServer(mapMaker, apiResponse, new MockGameStateProvider(), boardHelper);
             server.StartTraining(rounds);
-            _gameResponse = mockApiResponse.Text.JsonToObject<GameResponse>();
+            _gameResponse = apiResponse.Text.JsonToObject<GameResponse>();
             Assert.That(_gameResponse.Game.MaxTurns, Is.EqualTo(rounds*4));
         }
 

@@ -1,6 +1,8 @@
-﻿using NUnit.Framework;
+﻿using NSubstitute;
+using NUnit.Framework;
 using Vindinium.Common;
 using Vindinium.Common.DataStructures;
+using Vindinium.Common.Entities;
 using Vindinium.Common.Services;
 using Vindinium.Game.Logic.Tests.Mocks;
 
@@ -12,12 +14,14 @@ namespace Vindinium.Game.Logic.Tests
         [TestFixtureSetUp]
         public void RunBeforeFirstTest()
         {
-            var mockMapMaker = new MockMapMaker {MapText = "@1@2@3@4"};
-            var mockResponse = new MockApiResponse();
-            IGameServerProxy server = new GameServer(mockMapMaker, mockResponse, new MockGameStateProvider(),
-                new BoardHelper());
+            var mockMapMaker = Substitute.For<IMapMaker>();
+            var apiResponse = Substitute.For<IApiResponse>();
+            var boardHelper = Substitute.For<IBoardHelper>();
+            boardHelper.MapText = "@1@2@3@4";
+            IGameServerProxy server = new GameServer(mockMapMaker, apiResponse, new MockGameStateProvider(),
+                boardHelper);
             server.StartArena();
-            _gameResponse = mockResponse.Text.JsonToObject<GameResponse>();
+            _gameResponse = apiResponse.Text.JsonToObject<GameResponse>();
             _game = _gameResponse.Game;
         }
 

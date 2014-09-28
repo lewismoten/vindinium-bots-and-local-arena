@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using NSubstitute;
 using NUnit.Framework;
 using Vindinium.Common;
 using Vindinium.Common.DataStructures;
@@ -15,18 +16,20 @@ namespace Vindinium.Game.Logic.Tests
         [TestFixtureSetUp]
         public void RunBeforeFirstTest()
         {
-            var mockMapMaker = new MockMapMaker {MapText = "@1@2@3@4"};
-            _response = new MockApiResponse();
-            _server = new GameServer(mockMapMaker, _response, new MockGameStateProvider(), new BoardHelper());
+            var mapMaker = Substitute.For<IMapMaker>();
+            var boardHelper = Substitute.For<IBoardHelper>();
+            boardHelper.MapText = "@1@2@3@4";
+            _apiResponse = Substitute.For<IApiResponse>();
+            _server = new GameServer(mapMaker, _apiResponse, new MockGameStateProvider(), boardHelper);
             _server.StartTraining(300);
-            _gameResponse = _response.Text.JsonToObject<GameResponse>();
+            _gameResponse = _apiResponse.Text.JsonToObject<GameResponse>();
             _game = _gameResponse.Game;
         }
 
         private GameResponse _gameResponse;
         private Common.DataStructures.Game _game;
         private IGameServerProxy _server;
-        private IApiResponse _response;
+        private IApiResponse _apiResponse;
 
         [Test]
         public void AllOtherPlayersWithoutUserId()
@@ -112,9 +115,9 @@ namespace Vindinium.Game.Logic.Tests
         public void EachGameHasADifferentGameId()
         {
             _server.StartTraining(3000);
-            var game1 = _response.Text.JsonToObject<GameResponse>();
+            var game1 = _apiResponse.Text.JsonToObject<GameResponse>();
             _server.StartTraining(3000);
-            var game2 = _response.Text.JsonToObject<GameResponse>();
+            var game2 = _apiResponse.Text.JsonToObject<GameResponse>();
 
             Assert.That(game1.Game.Id, Is.Not.EqualTo(game2.Game.Id));
         }
@@ -123,9 +126,9 @@ namespace Vindinium.Game.Logic.Tests
         public void EachGameHasADifferentToken()
         {
             _server.StartTraining(3000);
-            var game1 = _response.Text.JsonToObject<GameResponse>();
+            var game1 = _apiResponse.Text.JsonToObject<GameResponse>();
             _server.StartTraining(3000);
-            var game2 = _response.Text.JsonToObject<GameResponse>();
+            var game2 = _apiResponse.Text.JsonToObject<GameResponse>();
             Assert.That(game1.Token, Is.Not.EqualTo(game2.Token));
         }
 

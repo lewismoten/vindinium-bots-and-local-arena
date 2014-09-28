@@ -74,7 +74,7 @@ namespace Vindinium.Game.Logic
             enemy.Life -= 20;
             if (enemy.IsDead())
             {
-                map.ForEach(p => { if (map[p] == enemy.MineToken()) map[p] = player.MineToken(); });
+                map.ReplaceTokens(enemy.MineToken(), player.MineToken());
             }
         }
 

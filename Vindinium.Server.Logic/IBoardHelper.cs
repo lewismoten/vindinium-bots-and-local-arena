@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Vindinium.Common.DataStructures;
 
 namespace Vindinium.Game.Logic
@@ -15,5 +16,6 @@ namespace Vindinium.Game.Logic
         Pos PositionOf(string token);
         void MakeSymmetric();
         AdjacentTokens GetAdjacentTokens(Pos pos);
+        void ReplaceTokens(string oldToken, string newToken);
     }
 }

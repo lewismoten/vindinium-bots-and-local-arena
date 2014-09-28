@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Vindinium.Common;
 using Vindinium.Common.DataStructures;
@@ -148,6 +149,11 @@ namespace Vindinium.Game.Logic
         public override string ToString()
         {
             return MapFormatter.FormatTokensAsMap(MapText);
+        }
+
+        public void ReplaceTokens(string oldToken, string newToken)
+        {
+            MapText = MapText.Replace(oldToken, newToken);
         }
     }
 }

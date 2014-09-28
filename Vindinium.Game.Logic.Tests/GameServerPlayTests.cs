@@ -1,4 +1,7 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
+using NSubstitute;
+using NSubstitute.Exceptions;
 using NUnit.Framework;
 using Vindinium.Common;
 using Vindinium.Common.DataStructures;
@@ -14,15 +17,17 @@ namespace Vindinium.Game.Logic.Tests
         [SetUp]
         public void BeforeEachTest()
         {
-            _mockMapMaker = new MockMapMaker();
+            _mapMaker = Substitute.For<IMapMaker>();
             _mockGameStateProvider = new MockGameStateProvider();
-            _server = new GameServer(_mockMapMaker, _apiResponse, _mockGameStateProvider, new BoardHelper());
+            _boardHelper = Substitute.For<IBoardHelper>();
+            _server = new GameServer(_mapMaker, _apiResponse, _mockGameStateProvider, _boardHelper);
         }
 
         private IGameServerProxy _server;
-        private readonly IApiResponse _apiResponse = new MockApiResponse();
-        private MockMapMaker _mockMapMaker;
+        private readonly IApiResponse _apiResponse = Substitute.For<IApiResponse>();
+        private IMapMaker _mapMaker;
         private MockGameStateProvider _mockGameStateProvider;
+        private IBoardHelper _boardHelper;
 
         private GameResponse Play(string gameId, string token, Direction direction)
         {
@@ -50,9 +55,8 @@ namespace Vindinium.Game.Logic.Tests
 
 
         private GameResponse Start(string mapText)
-
         {
-            _mockMapMaker.MapText = mapText;
+            _boardHelper.MapText = mapText;
             _server.StartArena();
             return _apiResponse.Text.JsonToObject<GameResponse>();
         }
@@ -60,19 +64,41 @@ namespace Vindinium.Game.Logic.Tests
         [Test]
         public void KillEnemy()
         {
-            _mockMapMaker.MapText = "@2$2@1$2";
-            _server.StartArena();
+            var mapMaker = Substitute.For<IMapMaker>();
+            var apiResponse = Substitute.For<IApiResponse>();
+            var gameStateProvider = Substitute.For<IGameStateProvider>();
+            var boardHelper = Substitute.For<IBoardHelper>();
+            boardHelper.Size.Returns(2);
+            boardHelper[Arg.Any<Pos>()].Returns("@2");
+            boardHelper.When(b=>b.ReplaceTokens("$2", "$1")).Do(c=> boardHelper.MapText = boardHelper.MapText.Replace("$2", "$1"));
+            boardHelper.PositionOf("@1").Returns(new Pos { X = 1, Y = 2 });
+            boardHelper.TokenCount("$1").Returns(2);
 
-            string text = _apiResponse.Text;
-            var response = text.JsonToObject<GameResponse>();
-            for (int i = 0; i < 5; i++)
-                response = Play(response.Game.Id, response.Token, Direction.North);
+            var server = new GameServer(mapMaker, apiResponse, gameStateProvider, boardHelper);
+            gameStateProvider.Game = new GameResponse()
+            {
+                Game = new Common.DataStructures.Game()
+                {
+                    Board = new Board()
+                    {
+                        MapText = "@2$2@1$2"
+                    },
+                    Players = new List<Hero>()
+                    {
+                        new Hero(){Id = 1, Pos = new Pos(){X = 1, Y=2}},
+                        new Hero(){Id = 2, Pos = new Pos(){X = 1, Y=1}, Life = 1, MineCount = 2, Gold = 53, SpawnPos = new Pos(){X=1, Y=1}}
+                    }
+                },
+                Self = new Hero() { Id = 1, Pos = new Pos() { X = 1, Y = 2 } }
+            };
 
-            Hero player2 = response.Game.Players.First(p => p.Id == 2);
+            server.Play(null, null, Direction.North);
+
+            Hero player2 = gameStateProvider.Game.Game.Players.First(p => p.Id == 2);
             Assert.That(player2.Life, Is.EqualTo(100));
             Assert.That(player2.MineCount, Is.EqualTo(0));
-            Assert.That(response.Self.MineCount, Is.EqualTo(2));
-            Assert.That(response.Game.Board.MapText, Is.EqualTo("@2$1@1$1"));
+            Assert.That(gameStateProvider.Game.Self.MineCount, Is.EqualTo(2));
+            Assert.That(gameStateProvider.Game.Game.Board.MapText, Is.EqualTo("@2$1@1$1"));
         }
 
         [Test]

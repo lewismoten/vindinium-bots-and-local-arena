@@ -6,7 +6,6 @@ using Vindinium.Common;
 using Vindinium.Common.DataStructures;
 using Vindinium.Common.Entities;
 using Vindinium.Common.Services;
-using Vindinium.Game.Logic.Tests.Mocks;
 
 namespace Vindinium.Game.Logic.Tests
 {
@@ -20,7 +19,7 @@ namespace Vindinium.Game.Logic.Tests
             var boardHelper = Substitute.For<BoardHelper>();
             boardHelper.MapText = "@1@2@3@4";
             _apiResponse = Substitute.For<IApiResponse>();
-            _server = new GameServer(mapMaker, _apiResponse, new MockGameStateProvider(), boardHelper);
+            _server = new GameServer(mapMaker, _apiResponse, Substitute.For<IGameStateProvider>(), boardHelper);
             _server.StartTraining(300);
             _gameResponse = _apiResponse.Text.JsonToObject<GameResponse>();
             _game = _gameResponse.Game;

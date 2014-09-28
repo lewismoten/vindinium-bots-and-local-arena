@@ -5,7 +5,6 @@ using Vindinium.Common;
 using Vindinium.Common.DataStructures;
 using Vindinium.Common.Entities;
 using Vindinium.Common.Services;
-using Vindinium.Game.Logic.Tests.Mocks;
 
 namespace Vindinium.Game.Logic.Tests
 {
@@ -19,7 +18,7 @@ namespace Vindinium.Game.Logic.Tests
             var boardHelper = Substitute.For<IBoardHelper>();
             boardHelper.MapText = "@1@2@3@4";
             var apiResponse = Substitute.For<IApiResponse>();
-            IGameServerProxy server = new GameServer(mapMaker, apiResponse, new MockGameStateProvider(),
+            IGameServerProxy server = new GameServer(mapMaker, apiResponse, Substitute.For<IGameStateProvider>(),
                 boardHelper);
             server.StartTraining(300);
             _gameResponse = apiResponse.Text.JsonToObject<GameResponse>();
@@ -37,7 +36,7 @@ namespace Vindinium.Game.Logic.Tests
             var boardHelper = Substitute.For<IBoardHelper>();
             boardHelper.MapText = "@1@2@3@4";
             var apiResponse = Substitute.For<IApiResponse>();
-            IGameServerProxy server = new GameServer(mapMaker, apiResponse, new MockGameStateProvider(), boardHelper);
+            IGameServerProxy server = new GameServer(mapMaker, apiResponse, Substitute.For<IGameStateProvider>(), boardHelper);
             server.StartTraining(rounds);
             _gameResponse = apiResponse.Text.JsonToObject<GameResponse>();
             Assert.That(_gameResponse.Game.MaxTurns, Is.EqualTo(rounds*4));

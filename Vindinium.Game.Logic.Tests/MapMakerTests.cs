@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NSubstitute;
 using NUnit.Framework;
-using Vindinium.Game.Logic.Tests.Mocks;
 
 namespace Vindinium.Game.Logic.Tests
 {
@@ -60,10 +60,12 @@ namespace Vindinium.Game.Logic.Tests
                     );
             });
         }
-
+        
         private void GenerateMap(int seed)
         {
-            _randomizer = new MockRandomizer(seed);
+            var random = new Random(seed);
+            _randomizer = Substitute.For<IRandomizer>();
+            _randomizer.Next(Arg.Any<int>(), Arg.Any<int>()).Returns(c => random.Next((int)c.Args()[0], (int)c.Args()[1]) );
             _boardHelper = new BoardHelper();
             _mapMaker = new MapMaker(_randomizer);
             _mapMaker.GenerateMap(_boardHelper);

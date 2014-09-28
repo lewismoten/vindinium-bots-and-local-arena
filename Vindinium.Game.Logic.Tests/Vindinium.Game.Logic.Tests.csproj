@@ -50,8 +50,6 @@
     <Compile Include="GameServerStartTrainingTests.cs" />
     <Compile Include="GridTests.cs" />
     <Compile Include="MapMakerTests.cs" />
-    <Compile Include="Mocks\MockGameStateProvider.cs" />
-    <Compile Include="Mocks\MockRandomizer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GameServerStartTests.cs" />
   </ItemGroup>

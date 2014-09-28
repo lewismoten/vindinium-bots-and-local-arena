@@ -6,7 +6,6 @@ using Vindinium.Common;
 using Vindinium.Common.DataStructures;
 using Vindinium.Common.Entities;
 using Vindinium.Common.Services;
-using Vindinium.Game.Logic.Tests.Mocks;
 
 namespace Vindinium.Game.Logic.Tests
 {
@@ -17,15 +16,15 @@ namespace Vindinium.Game.Logic.Tests
         public void BeforeEachTest()
         {
             _mapMaker = Substitute.For<IMapMaker>();
-            _mockGameStateProvider = new MockGameStateProvider();
+            _gameStateProvider = Substitute.For<IGameStateProvider>();
             _boardHelper = Substitute.For<BoardHelper>();
-            _server = new GameServer(_mapMaker, _apiResponse, _mockGameStateProvider, _boardHelper);
+            _server = new GameServer(_mapMaker, _apiResponse, _gameStateProvider, _boardHelper);
         }
 
         private IGameServerProxy _server;
         private readonly IApiResponse _apiResponse = Substitute.For<IApiResponse>();
         private IMapMaker _mapMaker;
-        private MockGameStateProvider _mockGameStateProvider;
+        private IGameStateProvider _gameStateProvider;
         private IBoardHelper _boardHelper;
 
         private GameResponse Play(string gameId, string token, Direction direction)
@@ -161,11 +160,11 @@ namespace Vindinium.Game.Logic.Tests
         {
             GameResponse response = Start("@1@2@3@4");
             response = Play(response.Game.Id, response.Token, Direction.Stay);
-            _mockGameStateProvider.Game.Game.Board.MapText = "@2@3@4@1";
-            _mockGameStateProvider.Game.Game.Players.First(p => p.Id == 1).Pos = new Pos {X = 2, Y = 2};
-            _mockGameStateProvider.Game.Game.Players.First(p => p.Id == 2).Pos = new Pos {X = 1, Y = 1};
-            _mockGameStateProvider.Game.Game.Players.First(p => p.Id == 3).Pos = new Pos {X = 2, Y = 1};
-            _mockGameStateProvider.Game.Game.Players.First(p => p.Id == 4).Pos = new Pos {X = 1, Y = 2};
+            _gameStateProvider.Game.Game.Board.MapText = "@2@3@4@1";
+            _gameStateProvider.Game.Game.Players.First(p => p.Id == 1).Pos = new Pos {X = 2, Y = 2};
+            _gameStateProvider.Game.Game.Players.First(p => p.Id == 2).Pos = new Pos {X = 1, Y = 1};
+            _gameStateProvider.Game.Game.Players.First(p => p.Id == 3).Pos = new Pos {X = 2, Y = 1};
+            _gameStateProvider.Game.Game.Players.First(p => p.Id == 4).Pos = new Pos {X = 1, Y = 2};
 
             response = Play(response.Game.Id, response.Token, Direction.West);
             Assert.That(response.Game.Board.MapText, Is.EqualTo("@2@3@4@1"));
